@@ -22,6 +22,7 @@ dependencies:
   # Location
   mapbox_gl: ^0.8.0
   location: ^3.0.2
+  js: ^0.6.0
 
   # HTTP
   http: ^0.12.0
