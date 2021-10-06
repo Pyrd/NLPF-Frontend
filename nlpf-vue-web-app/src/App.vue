@@ -54,7 +54,7 @@ export default {
   }),
   methods: {
     goHome() {
-      this.$router.push("/");
+      if (this.isNotOnMap) this.$router.push("/");
     },
     logout() {
       console.log("Logging out");
