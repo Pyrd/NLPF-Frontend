@@ -1,9 +1,18 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-      <div class="d-flex align-center">DVF Visualisateur</div>
+      <div class="d-flex align-center clickable" @click="goHome">
+        DVF Visualisateur
+      </div>
 
       <v-spacer></v-spacer>
+      <v-btn
+        v-if="isNotOnMap"
+        text
+        @click="appBarMenuHandler({ type: 'ROUTE', data: '/' })"
+      >
+        Map
+      </v-btn>
       <v-btn v-if="!isAuthentified" text @click="login">
         Login / Sign In
       </v-btn>
@@ -44,6 +53,9 @@ export default {
     auth: false,
   }),
   methods: {
+    goHome() {
+      this.$router.push("/");
+    },
     logout() {
       console.log("Logging out");
       this.auth = false;
@@ -66,6 +78,21 @@ export default {
     isAuthentified() {
       return this.auth;
     },
+    isNotOnMap() {
+      return this.$route.path !== "/";
+    },
   },
 };
 </script>
+
+<style lang="scss">
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.clickable {
+  cursor: pointer;
+}
+</style>
