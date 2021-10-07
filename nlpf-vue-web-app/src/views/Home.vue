@@ -5,12 +5,17 @@
         v-on:filter="filter"
         v-on:fetchCommunes="fetchCommunes"
         :departementList="getDepartementsList"
-        :communesList="communes"
+        :communesList="getCommunesList"
       />
     </v-col>
     <v-col cols="10">
-      <v-card height="100%" min-height="90vh">
-        <Map />
+      <v-card height="100%" min-height="calc(100vh - 64px)">
+        <Map
+          :departementList="departements"
+          :communesList="communes"
+          :selectedDepartement="selectedDepartement"
+          :selectedComunes="selectedComunes"
+        />
       </v-card>
     </v-col>
     <!-- <v-col cols="1">COL2</v-col> -->
@@ -29,8 +34,10 @@ export default {
     MapFilters,
   },
   data: () => ({
-    departements: departements["features"],
-    communes: [],
+    departements: departements,
+    communes: {},
+    selectedDepartement: "",
+    selectedComunes: "",
   }),
   methods: {
     async fetchCommunes(data) {
@@ -41,17 +48,28 @@ export default {
         data.departementInput
       );
 
-      this.communes = communes["features"];
+      this.communes = communes;
+      this.resetFilters();
     },
     filter(data) {
+      console.log(`Filtering ${JSON.stringify(data)}`);
+      this.selectedComunes = data.communeInput;
+      this.selectedDepartement = data.departementInput;
+    },
+    resetFilters(data) {
       console.log(`Filtering ${data}`);
+      this.selectedComunes = "";
+      this.selectedDepartement = "";
     },
   },
   computed: {
     getDepartementsList() {
-      return this.departements
+      return this.departements["features"]
         .map((e) => e.properties)
         .sort((a, b) => a.code > b.code);
+    },
+    getCommunesList() {
+      return this.communes["features"] || [];
     },
   },
 };
