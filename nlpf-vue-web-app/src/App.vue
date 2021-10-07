@@ -95,4 +95,12 @@ export default {
 .clickable {
   cursor: pointer;
 }
+
+.fheight {
+  height: 100%;
+}
+
+.fwidth {
+  width: 100%;
+}
 </style>
