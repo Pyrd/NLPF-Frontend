@@ -1,11 +1,11 @@
 <template>
   <MglMap
     id="map"
+    ref="map"
     class="map fheight fwidth"
     :accessToken="accessToken"
     :mapStyle="mapStyle"
-    :zoom="4"
-    :center="[2.0, 46.0]"
+    :zoom="1"
     :attributionControl="false"
     @load="onMapLoaded"
   >
@@ -14,22 +14,38 @@
     <MglGeolocateControl position="top-right" />
     <MglNavigationControl position="top-right" />
     <MglScaleControl /> -->
+
     <MglGeojsonLayer
       v-if="citygeojson != null"
       type="fill"
       :layer="geoJsonCommunesLayer"
-      layerId="secondary"
+      layerId="communes"
       :source="getCommunesGeoJson"
-      sourceId="secondary"
-      @click="handleClick"
+      sourceId="communes"
+      @click="handleClickCity"
     />
     <MglGeojsonLayer
       type="fill"
       :layer="geoJsonLayer"
-      layerId="maine"
+      layerId="departements"
       :source="getGeoJson"
-      sourceId="maine"
-      @click="handleClick"
+      sourceId="departements"
+      @click="handleClickDepartement"
+    />
+
+    <MglPopup
+      :showed="popUpCoordinates[0]"
+      :coordinates="popUpCoordinates"
+      anchor="top"
+    >
+      <v-card> <div>Hello, I'm popup!</div> </v-card>
+    </MglPopup>
+    <MglGeojsonLayer
+      type="symbols"
+      :layer="departementNameLayer"
+      layerId="departementsName"
+      :source="getGeoJson"
+      sourceId="departements"
     />
   </MglMap>
 </template>
@@ -45,6 +61,7 @@ import {
   MglFullscreenControl,
   MglScaleControl,
   MglGeojsonLayer,
+  MglPopup,
 } from "vue-mapbox";
 
 export default {
@@ -56,6 +73,7 @@ export default {
     MglFullscreenControl,
     MglScaleControl,
     MglGeojsonLayer,
+    MglPopup,
   },
   props: {
     departementList: Object,
@@ -66,26 +84,43 @@ export default {
   data() {
     return {
       geoJsonLayer: {
-        id: "maine",
+        id: "departements",
         type: "fill",
-        source: "maine", // reference the data source
+        source: "departements",
         layout: {},
         paint: {
-          "fill-color": "#0080ff", // blue color fill
+          "fill-color": "#0080ff",
           "fill-opacity": 0.5,
         },
       },
       geoJsonCommunesLayer: {
-        id: "secondary",
+        id: "communes",
         type: "fill",
-        source: "secondary", // reference the data source
+        source: "communes",
         layout: {},
         paint: {
-          "fill-color": "#ff80ff", // blue color fill
+          "fill-color": "#4c24d1",
           "fill-opacity": 0.5,
         },
       },
-
+      departementNameLayer: {
+        id: "departementsName",
+        type: "symbol",
+        source: "departements",
+        minzoom: 5,
+        maxzoom: 8,
+        paint: {
+          "text-color": "#fff",
+        },
+        layout: {
+          "text-field": ["get", "code"],
+          "text-variable-anchor": ["top", "bottom", "left", "right"],
+          "text-radial-offset": 0.5,
+          "text-justify": "auto",
+          "icon-image": ["get", "icon"],
+        },
+      },
+      popUpCoordinates: [null, null],
       accessToken:
         "pk.eyJ1IjoicHlyZCIsImEiOiJja3RteDh1aXMyOXdoMnBxbmFqMXFldXo0In0.liLIyYljrZI7V1Nw86cYXw",
       mapStyle: "mapbox://styles/pyrd/cktmw5jb6af1y17n744enhgwa", // "mapbox://styles/mapbox/streets-v11",
@@ -97,17 +132,46 @@ export default {
     this.mapbox = Mapbox;
   },
   methods: {
-    async onMapLoaded(event) {
-      // const asyncActions = event.component.actions;
-      // const newParams = await asyncActions.flyTo({
-      //   center: [2.0, 46.0],
-      //   zoom: 5,
-      //   speed: 1,
-      // });
-      // console.log(newParams);
+    showName(e) {
+      console.log(e.mapboxEvent.features[0].properties);
     },
-    handleClick(e) {
-      console.log(JSON.stringify(e));
+    mapInitialized(map) {
+      this.map = map;
+    },
+    async onMapLoaded({ map, component }) {
+      this.map = map;
+      const asyncActions = component.actions;
+      const newParams = await asyncActions.flyTo({
+        center: [2.0, 46.0],
+        zoom: 5,
+        speed: 1,
+      });
+    },
+    handleClickDepartement(e) {
+      e.mapboxEvent.originalEvent.stopPropagation();
+      const { code } = e.mapboxEvent.features[0].properties;
+      this.$emit("selectDepartement", { departementInput: code });
+
+      const coord = e.mapboxEvent.lngLat;
+      console.log(coord);
+      this.zoomOnElement(coord.lng, coord.lat, 7);
+    },
+    handleClickCity(e) {
+      e.mapboxEvent.originalEvent.stopPropagation();
+      console.log(e.mapboxEvent.features[0].properties);
+      const { code } = e.mapboxEvent.features[0].properties;
+      this.$emit("selectCity", { departementInput: code });
+
+      const coord = e.mapboxEvent.lngLat;
+      this.zoomOnElement(coord.lng, coord.lat, 11);
+    },
+    zoomOnElement(lng, lat, zoom) {
+      console.log(`Zomming on ${lng}, ${lat}, zoom: ${zoom}`);
+      this.map.flyTo({
+        center: [lng, lat],
+        zoom: zoom,
+        speed: 1,
+      });
     },
   },
   computed: {
@@ -133,9 +197,11 @@ export default {
   },
   watch: {
     departementList(newVal, old) {
+      console.log("New departement layer");
       this.geojson = newVal;
     },
     communesList(newVal, old) {
+      console.log("New commune layer");
       this.citygeojson = newVal;
     },
   },
