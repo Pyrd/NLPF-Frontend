@@ -3,6 +3,7 @@
     id="map"
     ref="map"
     class="map fheight fwidth"
+    :class="loading ? 'map-loading' : ''"
     :accessToken="accessToken"
     :mapStyle="mapStyle"
     :zoom="1"
@@ -16,15 +17,6 @@
     <MglScaleControl /> -->
 
     <MglGeojsonLayer
-      v-if="citygeojson != null"
-      type="fill"
-      :layer="geoJsonCommunesLayer"
-      layerId="communes"
-      :source="getCommunesGeoJson"
-      sourceId="communes"
-      @click="handleClickCity"
-    />
-    <MglGeojsonLayer
       type="fill"
       :layer="geoJsonLayer"
       layerId="departements"
@@ -33,19 +25,36 @@
       @click="handleClickDepartement"
     />
 
-    <MglPopup
+    <!-- <MglPopup
       :showed="popUpCoordinates[0]"
       :coordinates="popUpCoordinates"
       anchor="top"
     >
       <v-card> <div>Hello, I'm popup!</div> </v-card>
-    </MglPopup>
+    </MglPopup> -->
     <MglGeojsonLayer
       type="symbols"
       :layer="departementNameLayer"
       layerId="departementsName"
       :source="getGeoJson"
       sourceId="departements"
+    />
+    <MglGeojsonLayer
+      v-if="citygeojson != null"
+      type="symbols"
+      :layer="communeNameLayer"
+      layerId="communeName"
+      :source="getCommunesGeoJson"
+      sourceId="communes"
+    />
+    <MglGeojsonLayer
+      v-if="citygeojson != null"
+      type="fill"
+      :layer="geoJsonCommunesLayer"
+      layerId="communes"
+      :source="getCommunesGeoJson"
+      sourceId="communes"
+      @click="handleClickCity"
     />
   </MglMap>
 </template>
@@ -80,6 +89,7 @@ export default {
     communesList: Object,
     selectedDepartement: String,
     selectedComunes: String,
+    loading: Boolean,
   },
   data() {
     return {
@@ -113,7 +123,24 @@ export default {
           "text-color": "#fff",
         },
         layout: {
-          "text-field": ["get", "code"],
+          "text-field": ["get", "nom"],
+          "text-variable-anchor": ["top", "bottom", "left", "right"],
+          "text-radial-offset": 0.5,
+          "text-justify": "auto",
+          "icon-image": ["get", "icon"],
+        },
+      },
+      communeNameLayer: {
+        id: "communeName",
+        type: "symbol",
+        source: "communes",
+        minzoom: 7,
+        maxzoom: 15,
+        paint: {
+          "text-color": "#fff",
+        },
+        layout: {
+          "text-field": ["get", "nom"],
           "text-variable-anchor": ["top", "bottom", "left", "right"],
           "text-radial-offset": 0.5,
           "text-justify": "auto",
@@ -147,10 +174,11 @@ export default {
         speed: 1,
       });
     },
+    handleSelectDepartement() {},
     handleClickDepartement(e) {
       e.mapboxEvent.originalEvent.stopPropagation();
       const { code } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectDepartement", { departementInput: code });
+      this.$emit("selectDepartement", { input: code });
 
       const coord = e.mapboxEvent.lngLat;
       console.log(coord);
@@ -160,7 +188,7 @@ export default {
       e.mapboxEvent.originalEvent.stopPropagation();
       console.log(e.mapboxEvent.features[0].properties);
       const { code } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectCity", { departementInput: code });
+      this.$emit("selectCity", { input: code });
 
       const coord = e.mapboxEvent.lngLat;
       this.zoomOnElement(coord.lng, coord.lat, 11);
@@ -207,7 +235,7 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
+<style lang="scss" >
 #map {
   display: flex;
   flex: 1;
@@ -220,5 +248,15 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
+}
+
+.map-loading {
+  cursor: wait;
+}
+.mapboxgl-canvas-container {
+  cursor: none;
+}
+.mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: unset;
 }
 </style>

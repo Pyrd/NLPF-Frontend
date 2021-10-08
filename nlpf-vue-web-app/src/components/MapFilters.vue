@@ -63,6 +63,47 @@
             </template>
           </v-select>
         </v-col>
+        <v-col cols="12"> Montant de la vente (en K€) </v-col>
+        <v-col cols="12" class="mt-4">
+          <v-range-slider
+            v-model="range"
+            :max="max"
+            :min="min"
+            hide-details
+            step="1"
+            class="align-center"
+            thumb-color="primary"
+            thumb-label="always"
+            :thumb-size="34"
+          >
+          </v-range-slider>
+        </v-col>
+        <v-col cols="12">
+          <v-row>
+            <v-col>
+              <v-text-field
+                :value="range[0]"
+                class="mt-0 pt-0"
+                hide-details
+                single-line
+                type="number"
+                style="width: 60px"
+                @change="$set(range, 0, $event)"
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field
+                :value="range[1]"
+                class="mt-0 pt-0"
+                hide-details
+                single-line
+                type="number"
+                style="width: 60px"
+                @change="$set(range, 1, $event)"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-col>
         <v-col cols="12">
           <v-btn outlined @click="filter" :disabled="!valid"> Recherche </v-btn>
         </v-col>
@@ -84,6 +125,9 @@ export default {
     communeInput: "",
     communeLoading: false,
     communeFilterInput: "",
+    min: 0,
+    max: 10000,
+    range: [0, 10000],
   }),
   methods: {
     filter() {
@@ -94,7 +138,14 @@ export default {
     },
     fetchCommunes() {
       this.communeLoading = true;
-      this.$emit("fetchCommunes", { departementInput: this.departementInput });
+      this.$emit("fetchCommunes", { input: this.departementInput });
+    },
+    setDepartementInput(input) {
+      this.departementInput = input;
+    },
+    setCommuneInput(input) {
+      console.log(">", input);
+      this.communeInput = input;
     },
   },
   computed: {

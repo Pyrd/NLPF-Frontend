@@ -12,6 +12,7 @@
     <v-row>
       <v-col cols="2">
         <MapFilters
+          ref="FiltersComponent"
           v-on:filter="filter"
           v-on:fetchCommunes="fetchCommunes"
           :departementList="getDepartementsList"
@@ -21,11 +22,14 @@
       <v-col cols="10">
         <v-card height="100%" min-height="calc(100vh - 64px)">
           <Map
+            ref="MapComponent"
             :departementList="departements"
             :communesList="communes"
             :selectedDepartement="selectedDepartement"
             :selectedComunes="selectedComunes"
-            v-on:selectDepartement="fetchCommunes"
+            :loading="loading"
+            v-on:selectDepartement="handleMapClickDepartement"
+            v-on:selectCity="handleMapClickCommunes"
           />
         </v-card>
       </v-col>
@@ -51,17 +55,28 @@ export default {
     selectedDepartement: "",
     selectedComunes: "",
     snackbar: false,
+    loading: false,
   }),
   methods: {
+    handleMapClickDepartement(data) {
+      console.log("handleMapClickDepartement", data);
+
+      this.fetchCommunes(data);
+      this.$refs["FiltersComponent"].setDepartementInput(data.input);
+    },
+    handleMapClickCommunes(data) {
+      console.log("handleMapClickCommunes", data);
+      this.fetchBiens(data);
+      this.$refs["FiltersComponent"].setCommuneInput(data.input);
+    },
+    async fetchBiens() {},
     async fetchCommunes(data) {
-      console.log(
-        `Fetching city of departement code: ${data.departementInput}`
-      );
+      console.log(`Fetching city of departement code: ${data.input}`);
       this.snackbar = true;
-      const communes = await fetchCityOfDepartementContour(
-        data.departementInput
-      );
+      this.loading = true;
+      const communes = await fetchCityOfDepartementContour(data.input);
       // this.snackbar = false;
+      this.loading = false;
 
       this.communes = communes;
       this.resetFilters();
