@@ -80,7 +80,7 @@
         </v-col>
         <v-col cols="12">
           <v-row>
-            <v-col>
+            <v-col class="center">
               <v-text-field
                 :value="range[0]"
                 class="mt-0 pt-0"
@@ -91,7 +91,7 @@
                 @change="$set(range, 0, $event)"
               ></v-text-field>
             </v-col>
-            <v-col>
+            <v-col class="center">
               <v-text-field
                 :value="range[1]"
                 class="mt-0 pt-0"

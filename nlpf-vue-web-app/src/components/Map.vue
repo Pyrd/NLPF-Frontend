@@ -16,6 +16,7 @@
     <MglNavigationControl position="top-right" />
     <MglScaleControl /> -->
 
+    <!-- DEPARTEMENTS -->
     <MglGeojsonLayer
       type="fill"
       :layer="geoJsonLayer"
@@ -24,14 +25,13 @@
       sourceId="departements"
       @click="handleClickDepartement"
     />
-
-    <!-- <MglPopup
-      :showed="popUpCoordinates[0]"
-      :coordinates="popUpCoordinates"
-      anchor="top"
-    >
-      <v-card> <div>Hello, I'm popup!</div> </v-card>
-    </MglPopup> -->
+    <MglGeojsonLayer
+      type="line"
+      :layer="geoJsonLayerContour"
+      layerId="departements-contours"
+      :source="getGeoJson"
+      sourceId="departements"
+    />
     <MglGeojsonLayer
       type="symbols"
       :layer="departementNameLayer"
@@ -39,6 +39,8 @@
       :source="getGeoJson"
       sourceId="departements"
     />
+
+    <!-- COMMUNES -->
     <MglGeojsonLayer
       v-if="citygeojson != null"
       type="symbols"
@@ -55,6 +57,15 @@
       :source="getCommunesGeoJson"
       sourceId="communes"
       @click="handleClickCity"
+      @onMouseMove="onMouseMove"
+      @onMouseLeave="onMouseLeave"
+    />
+    <MglGeojsonLayer
+      type="line"
+      :layer="geoJsonCommunesContourLayer"
+      layerId="communes-contours"
+      :source="getCommunesGeoJson"
+      sourceId="communes"
     />
   </MglMap>
 </template>
@@ -72,6 +83,8 @@ import {
   MglGeojsonLayer,
   MglPopup,
 } from "vue-mapbox";
+
+import { fillLayerPaint, contoursPaint } from "../assets/map.styles";
 
 export default {
   components: {
@@ -98,20 +111,27 @@ export default {
         type: "fill",
         source: "departements",
         layout: {},
-        paint: {
-          "fill-color": "#0080ff",
-          "fill-opacity": 0.5,
-        },
+        paint: fillLayerPaint,
+      },
+      geoJsonLayerContour: {
+        id: "departements-contours",
+        source: "departements",
+        type: "line",
+        paint: contoursPaint,
       },
       geoJsonCommunesLayer: {
         id: "communes",
         type: "fill",
         source: "communes",
         layout: {},
-        paint: {
-          "fill-color": "#4c24d1",
-          "fill-opacity": 0.5,
-        },
+        paint: fillLayerPaint,
+      },
+      geoJsonCommunesContourLayer: {
+        id: "communes-contour",
+        type: "line",
+        source: "communes",
+        layout: {},
+        paint: contoursPaint,
       },
       departementNameLayer: {
         id: "departementsName",
@@ -120,10 +140,10 @@ export default {
         minzoom: 5,
         maxzoom: 8,
         paint: {
-          "text-color": "#fff",
+          "text-color": "#000",
         },
         layout: {
-          "text-field": ["get", "nom"],
+          "text-field": ["get", "code"],
           "text-variable-anchor": ["top", "bottom", "left", "right"],
           "text-radial-offset": 0.5,
           "text-justify": "auto",
@@ -137,7 +157,7 @@ export default {
         minzoom: 7,
         maxzoom: 15,
         paint: {
-          "text-color": "#fff",
+          "text-color": "#000",
         },
         layout: {
           "text-field": ["get", "nom"],
@@ -147,6 +167,7 @@ export default {
           "icon-image": ["get", "icon"],
         },
       },
+      hoveredStateId: null,
       popUpCoordinates: [null, null],
       accessToken:
         "pk.eyJ1IjoicHlyZCIsImEiOiJja3RteDh1aXMyOXdoMnBxbmFqMXFldXo0In0.liLIyYljrZI7V1Nw86cYXw",
@@ -200,6 +221,32 @@ export default {
         zoom: zoom,
         speed: 1,
       });
+    },
+    onMouseMove(event, source) {
+      const canvas = map.getCanvas();
+      canvas.style.cursor = "pointer";
+
+      if (event.features.length > 0) {
+        if (hoveredStateId !== null) {
+          hoverableSources.map(function (source) {
+            map.setFeatureState(
+              { source, id: hoveredStateId },
+              { hover: false }
+            ); // clean all sources to prevent error
+          });
+        }
+        hoveredStateId = event.features[0].id;
+        map.setFeatureState({ source, id: hoveredStateId }, { hover: true });
+      }
+    },
+
+    onMouseLeave(event, source) {
+      const canvas = map.getCanvas();
+      canvas.style.cursor = "";
+
+      if (hoveredStateId !== null) {
+        map.setFeatureState({ source, id: hoveredStateId }, { hover: false });
+      }
     },
   },
   computed: {
