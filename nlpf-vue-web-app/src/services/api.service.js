@@ -42,10 +42,19 @@ export const fetchCityOfDepartementContour = async (code) => {
     }
 }
 
-export const fetchParcelles = async (code) => {
+export const fetchParcelles = async (code, idSection) => {
     try {
         const resp = await axios.get(`https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes/${code}/geojson/parcelles`)
-        return resp.data
+        const { data } = resp
+        console.log(code, idSection)
+        return {
+            type: 'FeatureCollection',
+            features: data.features.filter((f) => {
+                // console.log(f, idSection, f.id.startsWith(idSection))
+                return f.id.startsWith(idSection)
+            })
+        }
+
     } catch (err) {
         console.error(`Some error happened: ${err}`)
         return null
@@ -65,3 +74,25 @@ export const fetchSection = async (code) => {
 // `https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes/${communeToGet}/geojson/${layerName}`
 
 //  /departements/35/communes?format=geojson&geometry=contour
+
+
+// SECTIONS
+//  "id": "75104000AB",
+//  "commune": "75104",
+//  "prefixe": "000",
+//  "code": "AB",
+//  "created": "2007-01-15",
+//  "updated": "2014-02-12"
+
+// PARCELLES
+// "properties": {
+// "id": "2A0410000A0678",
+// "commune": "2A041",
+// "prefixe": "000",
+// "section": "A",
+// "numero": "678",
+// "contenance": 2720,
+// "arpente": false,
+// "created": "2005-12-30",
+// "updated": "2019-12-11"
+//       }

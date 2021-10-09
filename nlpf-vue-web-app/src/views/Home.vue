@@ -25,11 +25,15 @@
             ref="MapComponent"
             :departementList="departements"
             :communesList="communes"
+            :sectionsList="sections"
+            :parcellesList="parcelles"
             :selectedDepartement="selectedDepartement"
             :selectedComunes="selectedComunes"
             :loading="loading"
             v-on:selectDepartement="handleMapClickDepartement"
             v-on:selectCity="handleMapClickCommunes"
+            v-on:selectSection="handleMapClickSection"
+            v-on:selectParcelles="handleMapClickParcelle"
           />
         </v-card>
       </v-col>
@@ -42,7 +46,11 @@
 import Map from "../components/Map.vue";
 import MapFilters from "../components/MapFilters.vue";
 import departements from "../assets/departements.json";
-import { fetchCityOfDepartementContour } from "../services/api.service";
+import {
+  fetchCityOfDepartementContour,
+  fetchParcelles,
+  fetchSection,
+} from "../services/api.service";
 
 export default {
   components: {
@@ -52,6 +60,8 @@ export default {
   data: () => ({
     departements: departements,
     communes: {},
+    sections: {},
+    parcelles: {},
     selectedDepartement: "",
     selectedComunes: "",
     snackbar: false,
@@ -59,19 +69,29 @@ export default {
   }),
   methods: {
     handleMapClickDepartement(data) {
-      console.log("handleMapClickDepartement", data);
+      // console.log("handleMapClickDepartement", data);
 
       this.fetchCommunes(data);
       this.$refs["FiltersComponent"].setDepartementInput(data.input);
     },
     handleMapClickCommunes(data) {
-      console.log("handleMapClickCommunes", data);
-      this.fetchBiens(data);
+      // console.log("handleMapClickCommunes", data);
+      // this.fetchBiens(data);
       this.$refs["FiltersComponent"].setCommuneInput(data.input);
+      this.fetchSections(data.input);
+    },
+    handleMapClickSection(data) {
+      console.log("handleMapClickSection", data);
+      // this.fetchBiens(data);
+      // this.$refs["FiltersComponent"].setCommuneInput(data.input);
+      this.fetchParcelles(data.input, data.sectionId);
+    },
+    handleMapClickParcelle(data) {
+      // console.log("handleMapClickParcelle", data);
     },
     async fetchBiens() {},
     async fetchCommunes(data) {
-      console.log(`Fetching city of departement code: ${data.input}`);
+      // console.log(`Fetching city of departement code: ${data.input}`);
       this.snackbar = true;
       this.loading = true;
       const communes = await fetchCityOfDepartementContour(data.input);
@@ -80,6 +100,16 @@ export default {
 
       this.communes = communes;
       this.resetFilters();
+    },
+    async fetchParcelles(input, id) {
+      // console.log(`Fetching parcelles: ${data}`);
+      const parcelles = await fetchParcelles(input, id);
+      this.parcelles = parcelles;
+    },
+    async fetchSections(data) {
+      // console.log(`Fetching sections: ${data}`);
+      const sections = await fetchSection(data);
+      this.sections = sections;
     },
     filter(data) {
       console.log(`Filtering ${JSON.stringify(data)}`);

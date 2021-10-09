@@ -67,6 +67,57 @@
       :source="getCommunesGeoJson"
       sourceId="communes"
     />
+
+    <!-- SECTIONS -->
+    <MglGeojsonLayer
+      v-if="sectionsList != null"
+      type="fill"
+      :layer="geoJsonSectionsLayer"
+      layerId="sections"
+      :source="getSectionsGeoJson"
+      sourceId="sections"
+      @click="handleClickSections"
+    />
+    <MglGeojsonLayer
+      type="line"
+      :layer="geoJsonSectionsContourLayer"
+      layerId="sections-contours"
+      :source="getSectionsGeoJson"
+      sourceId="sections"
+    />
+    <MglGeojsonLayer
+      v-if="sectionsList != null"
+      type="symbols"
+      :layer="sectionsNameLayer"
+      layerId="sectionsName"
+      :source="getSectionsGeoJson"
+      sourceId="sections"
+    />
+    <!-- PARCELLES -->
+    <MglGeojsonLayer
+      v-if="parcellesList != null"
+      type="fill"
+      :layer="geoJsonParcellesLayer"
+      layerId="parcelles"
+      :source="getParcellesGeoJson"
+      sourceId="parcelles"
+      @click="handleClickParcelles"
+    />
+    <MglGeojsonLayer
+      type="line"
+      :layer="geoJsonParcellesContourLayer"
+      layerId="parcelles-contour"
+      :source="getParcellesGeoJson"
+      sourceId="parcelles"
+    />
+    <!-- <MglGeojsonLayer
+      v-if="parcellesList != null"
+      type="symbols"
+      :layer="parcellesNameLayer"
+      layerId="parcellesName"
+      :source="getParcellesGeoJson"
+      sourceId="parcelles"
+    /> -->
   </MglMap>
 </template>
 
@@ -100,6 +151,8 @@ export default {
   props: {
     departementList: Object,
     communesList: Object,
+    sectionsList: Object,
+    parcellesList: Object,
     selectedDepartement: String,
     selectedComunes: String,
     loading: Boolean,
@@ -130,6 +183,34 @@ export default {
         id: "communes-contour",
         type: "line",
         source: "communes",
+        layout: {},
+        paint: contoursPaint,
+      },
+      geoJsonSectionsLayer: {
+        id: "sections",
+        type: "fill",
+        source: "sections",
+        layout: {},
+        paint: fillLayerPaint,
+      },
+      geoJsonSectionsContourLayer: {
+        id: "sections-contour",
+        type: "line",
+        source: "sections",
+        layout: {},
+        paint: contoursPaint,
+      },
+      geoJsonParcellesLayer: {
+        id: "parcelles",
+        type: "fill",
+        source: "parcelles",
+        layout: {},
+        paint: fillLayerPaint,
+      },
+      geoJsonParcellesContourLayer: {
+        id: "parcelles-contour",
+        type: "line",
+        source: "parcelles",
         layout: {},
         paint: contoursPaint,
       },
@@ -167,6 +248,23 @@ export default {
           "icon-image": ["get", "icon"],
         },
       },
+      sectionsNameLayer: {
+        id: "sectionsName",
+        type: "symbol",
+        source: "sections",
+        minzoom: 7,
+        maxzoom: 15,
+        paint: {
+          "text-color": "#000",
+        },
+        layout: {
+          "text-field": ["get", "code"],
+          "text-variable-anchor": ["top", "bottom", "left", "right"],
+          "text-radial-offset": 0.5,
+          "text-justify": "auto",
+          "icon-image": ["get", "icon"],
+        },
+      },
       hoveredStateId: null,
       popUpCoordinates: [null, null],
       accessToken:
@@ -174,6 +272,12 @@ export default {
       mapStyle: "mapbox://styles/pyrd/cktmw5jb6af1y17n744enhgwa", // "mapbox://styles/mapbox/streets-v11",
       geojson: null,
       citygeojson: null,
+      sectionsgeojson: null,
+      parcellesgeojson: null,
+      selectedDepartementId: null,
+      selectedCommune: null,
+      selectedSection: null,
+      selectedParcelle: null,
     };
   },
   created() {
@@ -199,23 +303,57 @@ export default {
     handleClickDepartement(e) {
       e.mapboxEvent.originalEvent.stopPropagation();
       const { code } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectDepartement", { input: code });
-
-      const coord = e.mapboxEvent.lngLat;
-      console.log(coord);
-      this.zoomOnElement(coord.lng, coord.lat, 7);
+      if (
+        this.selectedDepartementId == null ||
+        this.selectedDepartementId != code
+      ) {
+        console.log("HANDLECLICK > DEPARTEMENTS");
+        this.selectedDepartementId = code;
+        this.$emit("selectDepartement", { input: code });
+        const coord = e.mapboxEvent.lngLat;
+        this.zoomOnElement(coord.lng, coord.lat, 9);
+      }
     },
     handleClickCity(e) {
       e.mapboxEvent.originalEvent.stopPropagation();
-      console.log(e.mapboxEvent.features[0].properties);
       const { code } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectCity", { input: code });
+      if (this.selectedCommune == null || this.selectedCommune != code) {
+        console.log("HANDLECLICK > CITY");
+        this.selectedCommune = code;
 
+        // console.log(e.mapboxEvent.features[0].properties);
+        this.$emit("selectCity", { input: code });
+
+        const coord = e.mapboxEvent.lngLat;
+        this.zoomOnElement(coord.lng, coord.lat, 13);
+      }
+    },
+    handleClickSections(e) {
+      e.mapboxEvent.originalEvent.stopPropagation();
+      // console.log(e.mapboxEvent.features[0].properties);
+      const { commune, code, id } = e.mapboxEvent.features[0].properties;
+      if (
+        this.selectedSection == null ||
+        this.selectedSection != id + commune
+      ) {
+        console.log("HANDLECLICK > SECTIONS");
+        this.selectedSection = id + commune;
+        this.$emit("selectSection", { input: commune, sectionId: id });
+        const coord = e.mapboxEvent.lngLat;
+        this.zoomOnElement(coord.lng, coord.lat, 16);
+      }
+    },
+    handleClickParcelles(e) {
+      console.log("HANDLECLICK > PARCELLES");
+      e.mapboxEvent.originalEvent.stopPropagation();
+      console.log(e.mapboxEvent.features[0].properties);
+      const { commune, code } = e.mapboxEvent.features[0].properties;
+      this.$emit("selectParcelles", { input: commune });
       const coord = e.mapboxEvent.lngLat;
       this.zoomOnElement(coord.lng, coord.lat, 11);
     },
     zoomOnElement(lng, lat, zoom) {
-      console.log(`Zomming on ${lng}, ${lat}, zoom: ${zoom}`);
+      // console.log(`Zomming on ${lng}, ${lat}, zoom: ${zoom}`);
       this.map.flyTo({
         center: [lng, lat],
         zoom: zoom,
@@ -266,6 +404,22 @@ export default {
         },
       };
     },
+    getSectionsGeoJson() {
+      return {
+        type: "geojson",
+        data: {
+          ...this.sectionsgeojson,
+        },
+      };
+    },
+    getParcellesGeoJson() {
+      return {
+        type: "geojson",
+        data: {
+          ...this.parcellesgeojson,
+        },
+      };
+    },
   },
   beforeMount() {
     this.geojson = this.departementList;
@@ -278,6 +432,14 @@ export default {
     communesList(newVal, old) {
       console.log("New commune layer");
       this.citygeojson = newVal;
+    },
+    sectionsList(newVal, old) {
+      console.log("New section layer");
+      this.sectionsgeojson = newVal;
+    },
+    parcellesList(newVal, old) {
+      console.log("New parcelles layer");
+      this.parcellesgeojson = newVal;
     },
   },
 };
