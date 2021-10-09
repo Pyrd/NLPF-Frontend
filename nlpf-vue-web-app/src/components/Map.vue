@@ -350,7 +350,7 @@ export default {
       const { commune, code } = e.mapboxEvent.features[0].properties;
       this.$emit("selectParcelles", { input: commune });
       const coord = e.mapboxEvent.lngLat;
-      this.zoomOnElement(coord.lng, coord.lat, 11);
+      // this.zoomOnElement(coord.lng, coord.lat, 19);
     },
     zoomOnElement(lng, lat, zoom) {
       // console.log(`Zomming on ${lng}, ${lat}, zoom: ${zoom}`);
