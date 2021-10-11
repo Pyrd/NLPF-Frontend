@@ -21,22 +21,24 @@
       type="fill"
       :layer="geoJsonLayer"
       layerId="departements"
-      :source="getGeoJson"
+      :source.sync="getGeoJson"
       sourceId="departements"
       @click="handleClickDepartement"
+      @mousemove="onMouseMove"
+      @mouseleave="onMouseLeave"
     />
     <MglGeojsonLayer
       type="line"
       :layer="geoJsonLayerContour"
       layerId="departements-contours"
-      :source="getGeoJson"
+      :source.sync="getGeoJson"
       sourceId="departements"
     />
     <MglGeojsonLayer
       type="symbols"
       :layer="departementNameLayer"
       layerId="departementsName"
-      :source="getGeoJson"
+      :source.sync="getGeoJson"
       sourceId="departements"
     />
 
@@ -46,7 +48,7 @@
       type="symbols"
       :layer="communeNameLayer"
       layerId="communeName"
-      :source="getCommunesGeoJson"
+      :source.sync="getCommunesGeoJson"
       sourceId="communes"
     />
     <MglGeojsonLayer
@@ -54,17 +56,17 @@
       type="fill"
       :layer="geoJsonCommunesLayer"
       layerId="communes"
-      :source="getCommunesGeoJson"
+      :source.sync="getCommunesGeoJson"
       sourceId="communes"
       @click="handleClickCity"
-      @onMouseMove="onMouseMove"
-      @onMouseLeave="onMouseLeave"
+      @mousemove="onMouseMove"
+      @mouseleave="onMouseLeave"
     />
     <MglGeojsonLayer
       type="line"
       :layer="geoJsonCommunesContourLayer"
       layerId="communes-contours"
-      :source="getCommunesGeoJson"
+      :source.sync="getCommunesGeoJson"
       sourceId="communes"
     />
 
@@ -74,15 +76,17 @@
       type="fill"
       :layer="geoJsonSectionsLayer"
       layerId="sections"
-      :source="getSectionsGeoJson"
+      :source.sync="getSectionsGeoJson"
       sourceId="sections"
       @click="handleClickSections"
+      @mousemove="onMouseMove2"
+      @mouseleave="onMouseLeave2"
     />
     <MglGeojsonLayer
       type="line"
       :layer="geoJsonSectionsContourLayer"
       layerId="sections-contours"
-      :source="getSectionsGeoJson"
+      :source.sync="getSectionsGeoJson"
       sourceId="sections"
     />
     <MglGeojsonLayer
@@ -90,7 +94,7 @@
       type="symbols"
       :layer="sectionsNameLayer"
       layerId="sectionsName"
-      :source="getSectionsGeoJson"
+      :source.sync="getSectionsGeoJson"
       sourceId="sections"
     />
     <!-- PARCELLES -->
@@ -99,15 +103,17 @@
       type="fill"
       :layer="geoJsonParcellesLayer"
       layerId="parcelles"
-      :source="getParcellesGeoJson"
+      :source.sync="getParcellesGeoJson"
       sourceId="parcelles"
       @click="handleClickParcelles"
+      @mousemove="onMouseMove2"
+      @mouseleave="onMouseLeave2"
     />
     <MglGeojsonLayer
       type="line"
       :layer="geoJsonParcellesContourLayer"
       layerId="parcelles-contour"
-      :source="getParcellesGeoJson"
+      :source.sync="getParcellesGeoJson"
       sourceId="parcelles"
     />
     <!-- <MglGeojsonLayer
@@ -265,7 +271,9 @@ export default {
           "icon-image": ["get", "icon"],
         },
       },
-      hoveredStateId: null,
+      hoveredStateId2: null,
+      hoveredStateId2: null,
+
       popUpCoordinates: [null, null],
       accessToken:
         "pk.eyJ1IjoicHlyZCIsImEiOiJja3RteDh1aXMyOXdoMnBxbmFqMXFldXo0In0.liLIyYljrZI7V1Nw86cYXw",
@@ -277,6 +285,8 @@ export default {
       selectedDepartementId: null,
       selectedCommune: null,
       selectedSection: null,
+      hoverableSources: ["departements", "communes"],
+      hoverableSources2: ["sections", "parcelles"],
       selectedParcelle: null,
     };
   },
@@ -360,30 +370,85 @@ export default {
         speed: 1,
       });
     },
-    onMouseMove(event, source) {
-      const canvas = map.getCanvas();
+    onMouseMove(event) {
+      const { mapboxEvent, layerId } = event;
+      const canvas = this.map.getCanvas();
+      console.log(
+        "MouseMove",
+        layerId,
+        mapboxEvent.features[0].source,
+        this.hoveredStateId2
+      );
       canvas.style.cursor = "pointer";
-
-      if (event.features.length > 0) {
-        if (hoveredStateId !== null) {
-          hoverableSources.map(function (source) {
-            map.setFeatureState(
-              { source, id: hoveredStateId },
+      if (mapboxEvent.features.length > 0) {
+        if (this.hoveredStateId2 != null) {
+          for (let source of this.hoverableSources) {
+            this.map.setFeatureState(
+              { source, id: this.hoveredStateId2 },
               { hover: false }
-            ); // clean all sources to prevent error
-          });
+            );
+          }
         }
-        hoveredStateId = event.features[0].id;
-        map.setFeatureState({ source, id: hoveredStateId }, { hover: true });
+        this.hoveredStateId2 = mapboxEvent.features[0].id;
+        this.map.setFeatureState(
+          { source: layerId, id: this.hoveredStateId2 },
+          { hover: true }
+        );
       }
     },
 
-    onMouseLeave(event, source) {
-      const canvas = map.getCanvas();
-      canvas.style.cursor = "";
+    onMouseLeave(event) {
+      const { layerId } = event;
 
-      if (hoveredStateId !== null) {
-        map.setFeatureState({ source, id: hoveredStateId }, { hover: false });
+      const canvas = this.map.getCanvas();
+      canvas.style.cursor = "";
+      if (this.hoveredStateId2 != null) {
+        this.map.setFeatureState(
+          { source: layerId, id: this.hoveredStateId2 },
+          { hover: false }
+        );
+      }
+    },
+    onMouseMove2(event) {
+      const { mapboxEvent, layerId } = event;
+      const canvas = this.map.getCanvas();
+      console.log(
+        "MouseMove",
+        layerId,
+        mapboxEvent.features[0].source,
+        this.hoveredStateId2
+      );
+      canvas.style.cursor = "pointer";
+      if (mapboxEvent.features.length > 0) {
+        if (this.hoveredStateId2 != null) {
+          for (let source of [
+            ...this.hoverableSources,
+            ...this.hoverableSources2,
+          ]) {
+            this.map.setFeatureState(
+              { source, id: this.hoveredStateId2 },
+              { hover: false }
+            );
+          }
+        }
+        this.hoveredStateId2 = mapboxEvent.features[0].id;
+        this.map.setFeatureState(
+          { source: layerId, id: this.hoveredStateId2 },
+          { hover: true }
+        );
+      }
+    },
+
+    onMouseLeave2(event) {
+      const { layerId } = event;
+
+      const canvas = this.map.getCanvas();
+      canvas.style.cursor = "";
+      if (this.hoveredStateId2 != null) {
+        this.map.setFeatureState(
+          { source: layerId, id: this.hoveredStateId2 },
+          { hover: false }
+        );
       }
     },
   },
@@ -391,6 +456,7 @@ export default {
     getGeoJson() {
       return {
         type: "geojson",
+        generateId: true,
         data: {
           ...this.geojson,
         },
@@ -399,6 +465,7 @@ export default {
     getCommunesGeoJson() {
       return {
         type: "geojson",
+        generateId: true,
         data: {
           ...this.citygeojson,
         },
@@ -407,6 +474,7 @@ export default {
     getSectionsGeoJson() {
       return {
         type: "geojson",
+        generateId: true,
         data: {
           ...this.sectionsgeojson,
         },
@@ -415,6 +483,7 @@ export default {
     getParcellesGeoJson() {
       return {
         type: "geojson",
+        generateId: true,
         data: {
           ...this.parcellesgeojson,
         },
