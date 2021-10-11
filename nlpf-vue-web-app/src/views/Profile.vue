@@ -4,20 +4,85 @@
       <v-row justify="center" align="center" no-gutters>
         <v-col cols="3" class="left-col">
           <v-row>
+            <v-card>
+              <v-card-title> John Doe</v-card-title>
+            </v-card>
+          </v-row>
+          <v-row>
             <v-avatar color="indigo" size="100">
               <v-icon dark> mdi-account-circle </v-icon>
             </v-avatar>
           </v-row>
           <v-row>
-            <v-card-title> John Doe </v-card-title>
+            <v-card>
+              <v-card-title> John Doe</v-card-title>
+            </v-card>
           </v-row>
           <v-row>
-            <v-card-title> Acheteur </v-card-title>
+            <v-card>
+              <v-card-title> john.doe@gmail.com</v-card-title>
+            </v-card>
+          </v-row>
+          <v-row>
+            <v-card>
+              <v-card-title> Acheteur</v-card-title>
+            </v-card>
           </v-row>
         </v-col>
         <v-col cols="8" class="mr-4">
           <v-row justify="center">
-            <v-btn @click="travelToFavoris"> Éditer Profil </v-btn>
+            <v-dialog v-model="dialogprofil" persistent max-width="600px">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="primary" dark v-bind="attrs" v-on="on">
+                  Editer votre profil
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">Vos informations</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field label="Prénom*" required></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field label="Nom*" required></v-text-field>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-text-field label="Email*" required></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-select
+                          :items="['Acheteur', 'Vendeur']"
+                          label="Catégorie*"
+                          required
+                        ></v-select>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                  <small>*Champs obligatoire</small>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="red darken-1"
+                    text
+                    @click="dialogprofil = false"
+                  >
+                    Annuler
+                  </v-btn>
+                  <v-btn
+                    color="green darken-1"
+                    text
+                    @click="dialogprofil = false"
+                  >
+                    Confirmer
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-row>
           <v-row justify="center">
             <v-dialog v-model="dialog1" persistent max-width="600px">
@@ -135,6 +200,7 @@ export default {
     return {
       dialog1: false,
       dialog: false,
+      dialogprofil: false,
     };
   },
 
@@ -151,5 +217,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+.first-line {
+  margin: 2;
 }
 </style>
