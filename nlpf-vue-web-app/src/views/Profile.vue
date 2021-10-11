@@ -202,6 +202,8 @@
 </template>
 
 <script>
+import "../services/api.service";
+
 export default {
   data() {
     return {
