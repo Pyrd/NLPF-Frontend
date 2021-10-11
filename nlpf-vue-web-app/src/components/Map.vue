@@ -79,8 +79,8 @@
       :source.sync="getSectionsGeoJson"
       sourceId="sections"
       @click="handleClickSections"
-      @mousemove="onMouseMove2"
-      @mouseleave="onMouseLeave2"
+      @mousemove="onMouseMove"
+      @mouseleave="onMouseLeave"
     />
     <MglGeojsonLayer
       type="line"
@@ -106,8 +106,8 @@
       :source.sync="getParcellesGeoJson"
       sourceId="parcelles"
       @click="handleClickParcelles"
-      @mousemove="onMouseMove2"
-      @mouseleave="onMouseLeave2"
+      @mousemove="onMouseMove"
+      @mouseleave="onMouseLeave"
     />
     <MglGeojsonLayer
       type="line"
@@ -141,7 +141,11 @@ import {
   MglPopup,
 } from "vue-mapbox";
 
-import { fillLayerPaint, contoursPaint } from "../assets/map.styles";
+import {
+  fillLayerPaint,
+  fillLayerPaint2,
+  contoursPaint,
+} from "../assets/map.styles";
 
 export default {
   components: {
@@ -197,7 +201,7 @@ export default {
         type: "fill",
         source: "sections",
         layout: {},
-        paint: fillLayerPaint,
+        paint: fillLayerPaint2,
       },
       geoJsonSectionsContourLayer: {
         id: "sections-contour",
@@ -211,7 +215,7 @@ export default {
         type: "fill",
         source: "parcelles",
         layout: {},
-        paint: fillLayerPaint,
+        paint: fillLayerPaint2,
       },
       geoJsonParcellesContourLayer: {
         id: "parcelles-contour",
@@ -273,7 +277,7 @@ export default {
       },
       hoveredStateId2: null,
       hoveredStateId2: null,
-
+      hoveredLayerId: null,
       popUpCoordinates: [null, null],
       accessToken:
         "pk.eyJ1IjoicHlyZCIsImEiOiJja3RteDh1aXMyOXdoMnBxbmFqMXFldXo0In0.liLIyYljrZI7V1Nw86cYXw",
@@ -286,7 +290,7 @@ export default {
       selectedCommune: null,
       selectedSection: null,
       hoverableSources: ["departements", "communes"],
-      hoverableSources2: ["sections", "parcelles"],
+      hoverableSources2: ["departements", "communes", "sections", "parcelles"],
       selectedParcelle: null,
     };
   },
@@ -373,27 +377,48 @@ export default {
     onMouseMove(event) {
       const { mapboxEvent, layerId } = event;
       const canvas = this.map.getCanvas();
-      console.log(
-        "MouseMove",
-        layerId,
-        mapboxEvent.features[0].source,
-        this.hoveredStateId2
-      );
+      // console.log(
+      //   "MouseMove",
+      //   layerId,
+      //   this.hoveredStateId,
+      //   this.hoveredLayerId
+      // );
       canvas.style.cursor = "pointer";
       if (mapboxEvent.features.length > 0) {
-        if (this.hoveredStateId2 != null) {
-          for (let source of this.hoverableSources) {
-            this.map.setFeatureState(
-              { source, id: this.hoveredStateId2 },
-              { hover: false }
-            );
+        if (this.hoveredStateId != null) {
+          if (
+            layerId === "communes" &&
+            (this.hoveredLayerId == "sections" ||
+              this.hoveredLayerId == "parcelles")
+          ) {
+            for (let source of this.hoverableSources) {
+              this.map.setFeatureState(
+                { source, id: this.hoveredStateId },
+                { hover: false }
+              );
+            }
+          } else {
+            for (let source of this.hoverableSources2) {
+              this.map.setFeatureState(
+                { source, id: this.hoveredStateId },
+                { hover: false }
+              );
+            }
           }
         }
-        this.hoveredStateId2 = mapboxEvent.features[0].id;
-        this.map.setFeatureState(
-          { source: layerId, id: this.hoveredStateId2 },
-          { hover: true }
-        );
+        if (
+          layerId != "communes" ||
+          (layerId === "communes" &&
+            this.hoveredLayerId != "sections" &&
+            this.hoveredLayerId != "parcelles")
+        ) {
+          this.hoveredStateId = mapboxEvent.features[0].id;
+          this.hoveredLayerId = layerId;
+          this.map.setFeatureState(
+            { source: layerId, id: this.hoveredStateId },
+            { hover: true }
+          );
+        }
       }
     },
 
@@ -402,51 +427,9 @@ export default {
 
       const canvas = this.map.getCanvas();
       canvas.style.cursor = "";
-      if (this.hoveredStateId2 != null) {
+      if (this.hoveredStateId != null) {
         this.map.setFeatureState(
-          { source: layerId, id: this.hoveredStateId2 },
-          { hover: false }
-        );
-      }
-    },
-    onMouseMove2(event) {
-      const { mapboxEvent, layerId } = event;
-      const canvas = this.map.getCanvas();
-      console.log(
-        "MouseMove",
-        layerId,
-        mapboxEvent.features[0].source,
-        this.hoveredStateId2
-      );
-      canvas.style.cursor = "pointer";
-      if (mapboxEvent.features.length > 0) {
-        if (this.hoveredStateId2 != null) {
-          for (let source of [
-            ...this.hoverableSources,
-            ...this.hoverableSources2,
-          ]) {
-            this.map.setFeatureState(
-              { source, id: this.hoveredStateId2 },
-              { hover: false }
-            );
-          }
-        }
-        this.hoveredStateId2 = mapboxEvent.features[0].id;
-        this.map.setFeatureState(
-          { source: layerId, id: this.hoveredStateId2 },
-          { hover: true }
-        );
-      }
-    },
-
-    onMouseLeave2(event) {
-      const { layerId } = event;
-
-      const canvas = this.map.getCanvas();
-      canvas.style.cursor = "";
-      if (this.hoveredStateId2 != null) {
-        this.map.setFeatureState(
-          { source: layerId, id: this.hoveredStateId2 },
+          { source: layerId, id: this.hoveredStateId },
           { hover: false }
         );
       }

@@ -46,6 +46,7 @@
 import Map from "../components/Map.vue";
 import MapFilters from "../components/MapFilters.vue";
 import departements from "../assets/departements.json";
+
 import {
   fetchCityOfDepartementContour,
   fetchParcelles,
