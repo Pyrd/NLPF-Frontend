@@ -1,13 +1,9 @@
+
 <template>
   <div class="h1">
     <v-container class="px-0">
       <v-row justify="center" align="center" no-gutters>
         <v-col cols="3" class="left-col">
-          <v-row>
-            <v-card>
-              <v-card-title> John Doe</v-card-title>
-            </v-card>
-          </v-row>
           <v-row>
             <v-avatar color="indigo" size="100">
               <v-icon dark> mdi-account-circle </v-icon>
@@ -84,6 +80,9 @@
               </v-card>
             </v-dialog>
           </v-row>
+
+          <v-row> <v-container> </v-container> </v-row>
+
           <v-row justify="center">
             <v-dialog v-model="dialog1" persistent max-width="600px">
               <template v-slot:activator="{ on, attrs }">
@@ -128,14 +127,22 @@
               </v-card>
             </v-dialog>
           </v-row>
+
+          <v-row> <v-container> </v-container> </v-row>
+
           <v-row justify="center">
-            <v-btn @click="travelToFavoris"> Accéder au Favoris </v-btn>
+            <v-btn color="primary" @click="travelToFavoris">
+              Accéder au Favoris
+            </v-btn>
           </v-row>
+
+          <v-row> <v-container> </v-container> </v-row>
+
           <v-row justify="center">
             <v-dialog v-model="dialog" persistent max-width="290">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="primary" dark v-bind="attrs" v-on="on">
-                  Supprimer compte
+                <v-btn color="error" dark v-bind="attrs" v-on="on">
+                  Supprimer votre compte
                 </v-btn>
               </template>
               <v-card>
@@ -201,12 +208,17 @@ export default {
       dialog1: false,
       dialog: false,
       dialogprofil: false,
+      user: {},
     };
   },
 
   methods: {
     travelToFavoris() {
       this.$router.push("favoris");
+    },
+
+    async fetchUser() {
+      const users = this.fetchUser(data.input);
     },
   },
 };
