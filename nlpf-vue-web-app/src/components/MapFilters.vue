@@ -63,7 +63,9 @@
             </template>
           </v-select>
         </v-col>
-        <v-col cols="12"> Montant de la vente (en K€) </v-col>
+        <v-col cols="12">
+          <div class="font-weight-bold">Montant de la vente (en K€)</div></v-col
+        >
         <v-col cols="12" class="mt-4">
           <v-range-slider
             v-model="range"
@@ -82,6 +84,7 @@
           <v-row>
             <v-col class="center">
               <v-text-field
+                outlined
                 :value="range[0]"
                 class="mt-0 pt-0"
                 hide-details
@@ -93,6 +96,7 @@
             </v-col>
             <v-col class="center">
               <v-text-field
+                outlined
                 :value="range[1]"
                 class="mt-0 pt-0"
                 hide-details
@@ -105,7 +109,16 @@
           </v-row>
         </v-col>
         <v-col cols="12">
-          <v-btn outlined @click="filter" :disabled="!valid"> Recherche </v-btn>
+          <v-btn
+            :loading="loading"
+            color="primary"
+            block
+            outlined
+            @click="filter"
+            :disabled="!valid"
+          >
+            Recherche
+          </v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -118,6 +131,7 @@ export default {
     departementList: Array,
     communesList: Array,
     price_range: Array,
+    loading: Boolean,
   },
   data: () => ({
     valid: false,

@@ -98,7 +98,6 @@
       sourceId="sections"
     />
 
-    <!-- getUnMutatedParcelles getMutatedParcelles -->
     <!-- PARCELLES -->
     <MglGeojsonLayer
       v-if="parcellesList != null"
@@ -267,7 +266,12 @@ export default {
         source: "parcellesMutated",
         layout: {},
         paint: {
-          "fill-color": mutationColor,
+          "fill-color": [
+            "case",
+            ["boolean", ["feature-state", "selected"], false],
+            mutationSelectedColor,
+            mutationColor,
+          ],
           "fill-outline-color": [
             "case",
             ["boolean", ["feature-state", "selected"], false],
@@ -356,6 +360,7 @@ export default {
       selectedDepartementId: null,
       selectedCommune: null,
       selectedSection: null,
+      selectedStateId: null,
       hoverableSources: ["departements", "communes"],
       hoverableSources2: [
         "departements",
@@ -434,6 +439,18 @@ export default {
       console.log("HANDLECLICK > PARCELLES");
       e.mapboxEvent.originalEvent.stopPropagation();
       console.log(JSON.stringify(e.mapboxEvent.features[0]));
+
+      this.map.setFeatureState(
+        { source: "parcellesMutated", id: this.selectedStateId },
+        { selected: false }
+      );
+
+      this.selectedStateId = e.mapboxEvent.features[0].id;
+      this.map.setFeatureState(
+        { source: "parcellesMutated", id: this.selectedStateId },
+        { selected: true }
+      );
+
       const { commune, sectionId } = e.mapboxEvent.features[0].properties;
       this.$emit("selectParcelles", { input: commune });
       const coord = e.mapboxEvent.lngLat;
@@ -552,47 +569,6 @@ export default {
         },
       };
     },
-    getParcellesGeoJson() {
-      return {
-        type: "geojson",
-        generateId: true,
-        data: {
-          ...this.parcellesgeojson,
-        },
-      };
-    },
-    getFormattedParcelles() {
-      if (!this.parcellesgeojson) {
-        return {
-          type: "geojson",
-          generateId: true,
-          data: {},
-        };
-      }
-      const parcelles = this.parcellesgeojson;
-      const biens = [...this.results];
-      if (this.results == null) {
-        return this.parcellesgeojson;
-      }
-      const features = parcelles.features;
-      for (let feat of features) {
-        const id = feat.id;
-        console.log(`Checking parcelle id ${id}`);
-        for (let bien of biens) {
-          if (bien.id_parcelle == id) {
-            if (!feat.biens) {
-              feat.hasSales = true;
-              // feat.biens = [bien];
-              break;
-            }
-            // else {
-            //   feat.biens.push(bien)
-            // }
-          }
-        }
-      }
-      return this.parcellesgeojson;
-    },
     getUnMutatedParcellesGeoJson() {
       if (!this.parcellesgeojson) {
         return {
@@ -605,7 +581,7 @@ export default {
       const unmutated = features.filter((e) => {
         return !this.isMutatedBien(e.properties.id);
       });
-      console.log("get unmutated", unmutated);
+      // console.log("get unmutated", unmutated);
       return {
         type: "geojson",
         generateId: true,
@@ -627,7 +603,7 @@ export default {
       const mutated = features.filter((e) =>
         this.isMutatedBien(e.properties.id)
       );
-      console.log("get mutated", mutated);
+      // console.log("get mutated", mutated);
 
       return {
         type: "geojson",
@@ -659,19 +635,6 @@ export default {
       console.log("New parcelles layer");
       this.parcellesgeojson = newVal;
     },
-    // results(newVal, old) {
-    //   console.log(`New results: ${newVal.length}`);
-    //   const biens = newVal;
-    //   const count = this.parcellesgeojson.features.length;
-    //   console.log(">>>>>>><", count);
-    //   for (let i = 0; i < count; i++) {
-    //     const feat = this.map.getFeatureState({ source: "parcelles", id: i });
-    //     console.log(JSON.stringify(feat));
-    //   }
-    //   for (let bien of biens) {
-    //     console.log(`bien id:${bien.id_parcelle}`);
-    //   }
-    // },
   },
 };
 </script>

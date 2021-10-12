@@ -18,6 +18,7 @@
           :departementList="getDepartementsList"
           :communesList="getCommunesList"
           :price_range="properties.price_range"
+          :loading="loading"
         />
       </v-col>
       <v-col cols="10">
@@ -101,7 +102,12 @@ export default {
       console.log("handleMapClickParcelle", data);
     },
     async fetchBiens(id_parcelle) {
+      this.loading = true;
+
       const biens = await fetchBiens(id_parcelle, this.properties, this.page);
+
+      setTimeout(() => (this.loading = false), 2500);
+
       console.log("Biens fetched", biens);
       const { page, total_result, results } = biens;
       this.page = page;
@@ -114,13 +120,14 @@ export default {
       this.loading = true;
       const communes = await fetchCityOfDepartementContour(data.input);
       // this.snackbar = false;
-      this.loading = false;
+      setTimeout(() => (this.loading = false), 1000);
 
       this.communes = communes;
       this.resetFilters();
     },
     async fetchParcelles(input, id) {
       // console.log(`Fetching parcelles: ${data}`);
+
       const parcelles = await fetchParcelles(input, id);
       this.parcelles = parcelles;
     },
