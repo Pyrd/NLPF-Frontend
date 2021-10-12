@@ -3,8 +3,10 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import notFoundPage from '../views/NotFound.vue'
 import { setPageTitleMiddleware, checkAccessMiddleware, initCurrentUserStateMiddleware } from './middlewares'
+import GSignInButton from 'vue-google-signin-button'
 
 Vue.use(VueRouter)
+Vue.use(GSignInButton)
 
 const base_title = "DVF App - "
 
@@ -79,3 +81,23 @@ const router = new VueRouter({
 router.beforeEach(setPageTitleMiddleware)
 
 export default router
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
