@@ -17,6 +17,7 @@
           v-on:fetchCommunes="fetchCommunes"
           :departementList="getDepartementsList"
           :communesList="getCommunesList"
+          :price_range="properties.price_range"
         />
       </v-col>
       <v-col cols="10">
@@ -30,6 +31,7 @@
             :selectedDepartement="selectedDepartement"
             :selectedComunes="selectedComunes"
             :loading="loading"
+            :results="results"
             v-on:selectDepartement="handleMapClickDepartement"
             v-on:selectCity="handleMapClickCommunes"
             v-on:selectSection="handleMapClickSection"
@@ -51,6 +53,7 @@ import {
   fetchCityOfDepartementContour,
   fetchParcelles,
   fetchSection,
+  fetchBiens,
 } from "../services/api.service";
 
 export default {
@@ -63,10 +66,16 @@ export default {
     communes: {},
     sections: {},
     parcelles: {},
+    results: [],
+    total_result: 0,
+    page: 0,
     selectedDepartement: "",
     selectedComunes: "",
     snackbar: false,
     loading: false,
+    properties: {
+      price_range: [0, 10000],
+    },
   }),
   methods: {
     handleMapClickDepartement(data) {
@@ -86,11 +95,19 @@ export default {
       // this.fetchBiens(data);
       // this.$refs["FiltersComponent"].setCommuneInput(data.input);
       this.fetchParcelles(data.input, data.sectionId);
+      this.fetchBiens(data.sectionId);
     },
     handleMapClickParcelle(data) {
-      // console.log("handleMapClickParcelle", data);
+      console.log("handleMapClickParcelle", data);
     },
-    async fetchBiens() {},
+    async fetchBiens(id_parcelle) {
+      const biens = await fetchBiens(id_parcelle, this.properties, this.page);
+      console.log("Biens fetched", biens);
+      const { page, total_result, results } = biens;
+      this.page = page;
+      this.total_result = total_result;
+      this.results = results;
+    },
     async fetchCommunes(data) {
       // console.log(`Fetching city of departement code: ${data.input}`);
       this.snackbar = true;
@@ -116,6 +133,7 @@ export default {
       console.log(`Filtering ${JSON.stringify(data)}`);
       this.selectedComunes = data.communeInput;
       this.selectedDepartement = data.departementInput;
+      this.properties.price_range = data.price_range;
     },
     resetFilters(data) {
       console.log(`Filtering ${data}`);

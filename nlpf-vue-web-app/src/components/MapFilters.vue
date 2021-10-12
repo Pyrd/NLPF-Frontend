@@ -117,6 +117,7 @@ export default {
   props: {
     departementList: Array,
     communesList: Array,
+    price_range: Array,
   },
   data: () => ({
     valid: false,
@@ -134,6 +135,7 @@ export default {
       this.$emit("filter", {
         departementInput: this.departementInput,
         communeInput: this.communeInput,
+        price_range: this.range.map((e) => e * 1000),
       });
     },
     fetchCommunes() {
@@ -144,7 +146,6 @@ export default {
       this.departementInput = input;
     },
     setCommuneInput(input) {
-      console.log(">", input);
       this.communeInput = input;
     },
   },
@@ -173,6 +174,9 @@ export default {
   watch: {
     communesList(newList, old) {
       this.communeLoading = false;
+    },
+    price_range(newList, old) {
+      this.range = newList;
     },
   },
 };

@@ -3,6 +3,7 @@ import axios from 'axios'
 
 const GEOJSON_API_BASEURL = "https://geo.api.gouv.fr"
 const ETAB_API_BASEURL = "https://app.dvf.etalab.gouv.fr"
+const API_BACKEND_BASEURL = "https://stormy-taiga-31121.herokuapp.com"
 
 function sortByNom(features) {
     return features.sort((a, b) => { return a.properties.nom.localeCompare(b.properties.nom); })
@@ -64,6 +65,28 @@ export const fetchParcelles = async (code, idSection) => {
 export const fetchSection = async (code) => {
     try {
         const resp = await axios.get(`https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes/${code}/geojson/sections`)
+        return resp.data
+    } catch (err) {
+        console.error(`Some error happened: ${err}`)
+        return null
+    }
+}
+
+export const fetchBiens = async (id_parcelles, filters, pagination = 0) => {
+    try {
+        console.log(`${API_BACKEND_BASEURL}/biens/${id_parcelles}`)
+        const resp = await axios.post(`${API_BACKEND_BASEURL}/biens/${id_parcelles}`,
+            {
+                "page": pagination,
+                "nbr_element": 20,
+                filter: {
+                    // year: "2020",
+                    id_parcel: id_parcelles,
+                    // price_range: filters.price_range
+                }
+            }
+        )
+        console.log(resp.data)
         return resp.data
     } catch (err) {
         console.error(`Some error happened: ${err}`)

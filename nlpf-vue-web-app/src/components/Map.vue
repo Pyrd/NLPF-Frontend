@@ -97,33 +97,47 @@
       :source.sync="getSectionsGeoJson"
       sourceId="sections"
     />
+
+    <!-- getUnMutatedParcelles getMutatedParcelles -->
     <!-- PARCELLES -->
     <MglGeojsonLayer
       v-if="parcellesList != null"
       type="fill"
-      :layer="geoJsonParcellesLayer"
-      layerId="parcelles"
-      :source.sync="getParcellesGeoJson"
-      sourceId="parcelles"
+      :layer="geoJsonParcellesUnmutatedLayer"
+      layerId="parcellesUnmutated"
+      :source.sync="getUnMutatedParcellesGeoJson"
+      sourceId="parcellesUnmutated"
       @click="handleClickParcelles"
       @mousemove="onMouseMove"
       @mouseleave="onMouseLeave"
     />
     <MglGeojsonLayer
-      type="line"
-      :layer="geoJsonParcellesContourLayer"
-      layerId="parcelles-contour"
-      :source.sync="getParcellesGeoJson"
-      sourceId="parcelles"
-    />
-    <!-- <MglGeojsonLayer
       v-if="parcellesList != null"
-      type="symbols"
-      :layer="parcellesNameLayer"
-      layerId="parcellesName"
-      :source="getParcellesGeoJson"
-      sourceId="parcelles"
-    /> -->
+      type="line"
+      :layer="geoJsonParcellesMutatedContourLayer"
+      layerId="parcellesMutated-contour"
+      :source.sync="getParcellesGeoJson"
+      sourceId="parcellesMutated"
+    />
+    <MglGeojsonLayer
+      v-if="parcellesList != null"
+      type="fill"
+      :layer="geoJsonParcellesMutatedLayer"
+      layerId="parcellesMutated"
+      :source.sync="getMutatedParcellesGeoJson"
+      sourceId="parcellesMutated"
+      @click="handleClickParcelles"
+      @mousemove="onMouseMove"
+      @mouseleave="onMouseLeave"
+    />
+    <MglGeojsonLayer
+      v-if="parcellesList != null"
+      type="line"
+      :layer="geoJsonParcellesUnmutatedContourLayer"
+      layerId="parcellesUnmutated-contour"
+      :source.sync="getParcellesGeoJson"
+      sourceId="parcellesUnmutated"
+    />
   </MglMap>
 </template>
 
@@ -166,6 +180,7 @@ export default {
     selectedDepartement: String,
     selectedComunes: String,
     loading: Boolean,
+    results: Array,
   },
   data() {
     return {
@@ -221,6 +236,34 @@ export default {
         id: "parcelles-contour",
         type: "line",
         source: "parcelles",
+        layout: {},
+        paint: contoursPaint,
+      },
+      geoJsonParcellesUnmutatedLayer: {
+        id: "parcellesUnmutated",
+        type: "fill",
+        source: "parcellesUnmutated",
+        layout: {},
+        paint: fillLayerPaint2,
+      },
+      geoJsonParcellesUnmutatedContourLayer: {
+        id: "parcellesUnmutated-contour",
+        type: "line",
+        source: "parcellesUnmutated",
+        layout: {},
+        paint: contoursPaint,
+      },
+      geoJsonParcellesMutatedLayer: {
+        id: "parcellesMutated",
+        type: "fill",
+        source: "parcellesMutated",
+        layout: {},
+        paint: fillLayerPaint2,
+      },
+      geoJsonParcellesMutatedContourLayer: {
+        id: "parcellesMutated-contour",
+        type: "line",
+        source: "parcellesMutated",
         layout: {},
         paint: contoursPaint,
       },
@@ -290,7 +333,13 @@ export default {
       selectedCommune: null,
       selectedSection: null,
       hoverableSources: ["departements", "communes"],
-      hoverableSources2: ["departements", "communes", "sections", "parcelles"],
+      hoverableSources2: [
+        "departements",
+        "communes",
+        "sections",
+        "parcellesMutated",
+        "parcellesUnmutated",
+      ],
       selectedParcelle: null,
     };
   },
@@ -344,7 +393,7 @@ export default {
     },
     handleClickSections(e) {
       e.mapboxEvent.originalEvent.stopPropagation();
-      // console.log(e.mapboxEvent.features[0].properties);
+      console.log(e.mapboxEvent.features[0].properties);
       const { commune, code, id } = e.mapboxEvent.features[0].properties;
       if (
         this.selectedSection == null ||
@@ -360,8 +409,8 @@ export default {
     handleClickParcelles(e) {
       console.log("HANDLECLICK > PARCELLES");
       e.mapboxEvent.originalEvent.stopPropagation();
-      console.log(e.mapboxEvent.features[0].properties);
-      const { commune, code } = e.mapboxEvent.features[0].properties;
+      console.log(JSON.stringify(e.mapboxEvent.features[0]));
+      const { commune, sectionId } = e.mapboxEvent.features[0].properties;
       this.$emit("selectParcelles", { input: commune });
       const coord = e.mapboxEvent.lngLat;
       // this.zoomOnElement(coord.lng, coord.lat, 19);
@@ -375,54 +424,59 @@ export default {
       });
     },
     onMouseMove(event) {
+      event.mapboxEvent.originalEvent.stopPropagation();
+
       const { mapboxEvent, layerId } = event;
       const canvas = this.map.getCanvas();
-      // console.log(
-      //   "MouseMove",
-      //   layerId,
-      //   this.hoveredStateId,
-      //   this.hoveredLayerId
-      // );
       canvas.style.cursor = "pointer";
-      if (mapboxEvent.features.length > 0) {
-        if (this.hoveredStateId != null) {
-          if (
-            layerId === "communes" &&
-            (this.hoveredLayerId == "sections" ||
-              this.hoveredLayerId == "parcelles")
-          ) {
-            for (let source of this.hoverableSources) {
-              this.map.setFeatureState(
-                { source, id: this.hoveredStateId },
-                { hover: false }
-              );
-            }
-          } else {
-            for (let source of this.hoverableSources2) {
-              this.map.setFeatureState(
-                { source, id: this.hoveredStateId },
-                { hover: false }
-              );
+      // console.log(">>>", layerId);
+      try {
+        if (mapboxEvent.features.length > 0) {
+          if (this.hoveredStateId != null) {
+            //  layerId === "communes" &&
+            // (this.hoveredLayerId == "sections" ||
+            //   this.hoveredLayerId == "parcelles")
+            if (
+              layerId == "communes" &&
+              ["sections", "parcellesUnmutated", "parcellesMutated"].includes(
+                this.hoveredLayerId
+              )
+            ) {
+              for (let source of this.hoverableSources) {
+                this.map.setFeatureState(
+                  { source, id: this.hoveredStateId },
+                  { hover: false }
+                );
+              }
+            } else {
+              for (let source of this.hoverableSources2) {
+                this.map.setFeatureState(
+                  { source, id: this.hoveredStateId },
+                  { hover: false }
+                );
+              }
             }
           }
+          if (
+            layerId != "communes" ||
+            (layerId == "communes" &&
+              ["sections", "parcellesUnmutated", "parcellesMutated"].includes(
+                this.hoveredLayerId
+              ) == false)
+          ) {
+            this.hoveredStateId = mapboxEvent.features[0].id;
+            this.hoveredLayerId = layerId;
+            this.map.setFeatureState(
+              { source: layerId, id: this.hoveredStateId },
+              { hover: true }
+            );
+          }
         }
-        if (
-          layerId != "communes" ||
-          (layerId === "communes" &&
-            this.hoveredLayerId != "sections" &&
-            this.hoveredLayerId != "parcelles")
-        ) {
-          this.hoveredStateId = mapboxEvent.features[0].id;
-          this.hoveredLayerId = layerId;
-          this.map.setFeatureState(
-            { source: layerId, id: this.hoveredStateId },
-            { hover: true }
-          );
-        }
-      }
+      } catch (err) {}
     },
 
     onMouseLeave(event) {
+      event.mapboxEvent.originalEvent.stopPropagation();
       const { layerId } = event;
 
       const canvas = this.map.getCanvas();
@@ -433,6 +487,17 @@ export default {
           { hover: false }
         );
       }
+    },
+    isMutatedBien(id) {
+      for (let bien of this.results) {
+        if (bien.id_parcelle === id) {
+          console.log("IsMutatedbien TRUE>", id);
+          return true;
+        }
+      }
+      // console.log("IsMutatedbien FALSE>", id);
+
+      return false;
     },
   },
   computed: {
@@ -472,6 +537,83 @@ export default {
         },
       };
     },
+    getFormattedParcelles() {
+      if (!this.parcellesgeojson) {
+        return {
+          type: "geojson",
+          generateId: true,
+          data: {},
+        };
+      }
+      const parcelles = this.parcellesgeojson;
+      const biens = [...this.results];
+      if (this.results == null) {
+        return this.parcellesgeojson;
+      }
+      const features = parcelles.features;
+      for (let feat of features) {
+        const id = feat.id;
+        console.log(`Checking parcelle id ${id}`);
+        for (let bien of biens) {
+          if (bien.id_parcelle == id) {
+            if (!feat.biens) {
+              feat.hasSales = true;
+              // feat.biens = [bien];
+              break;
+            }
+            // else {
+            //   feat.biens.push(bien)
+            // }
+          }
+        }
+      }
+      return this.parcellesgeojson;
+    },
+    getUnMutatedParcellesGeoJson() {
+      if (!this.parcellesgeojson) {
+        return {
+          type: "geojson",
+          generateId: true,
+          data: {},
+        };
+      }
+      const features = this.parcellesgeojson.features;
+      const unmutated = features.filter((e) => {
+        return !this.isMutatedBien(e.properties.id);
+      });
+      console.log("get unmutated", unmutated);
+      return {
+        type: "geojson",
+        generateId: true,
+        data: {
+          ...this.parcellesgeojson,
+          features: unmutated,
+        },
+      };
+    },
+    getMutatedParcellesGeoJson() {
+      if (!this.parcellesgeojson) {
+        return {
+          type: "geojson",
+          generateId: true,
+          data: {},
+        };
+      }
+      const features = this.parcellesgeojson.features;
+      const mutated = features.filter((e) =>
+        this.isMutatedBien(e.properties.id)
+      );
+      console.log("get mutated", mutated);
+
+      return {
+        type: "geojson",
+        generateId: true,
+        data: {
+          ...this.parcellesgeojson,
+          features: mutated,
+        },
+      };
+    },
   },
   beforeMount() {
     this.geojson = this.departementList;
@@ -493,6 +635,19 @@ export default {
       console.log("New parcelles layer");
       this.parcellesgeojson = newVal;
     },
+    // results(newVal, old) {
+    //   console.log(`New results: ${newVal.length}`);
+    //   const biens = newVal;
+    //   const count = this.parcellesgeojson.features.length;
+    //   console.log(">>>>>>><", count);
+    //   for (let i = 0; i < count; i++) {
+    //     const feat = this.map.getFeatureState({ source: "parcelles", id: i });
+    //     console.log(JSON.stringify(feat));
+    //   }
+    //   for (let bien of biens) {
+    //     console.log(`bien id:${bien.id_parcelle}`);
+    //   }
+    // },
   },
 };
 </script>
