@@ -159,6 +159,11 @@ import {
   fillLayerPaint,
   fillLayerPaint2,
   contoursPaint,
+  mutationColor,
+  mutationSelectedColor,
+  mutationLieesColor,
+  unmutatedColor,
+  borderColor,
 } from "../assets/map.styles";
 
 export default {
@@ -244,7 +249,10 @@ export default {
         type: "fill",
         source: "parcellesUnmutated",
         layout: {},
-        paint: fillLayerPaint2,
+        paint: {
+          "fill-color": unmutatedColor,
+          "fill-opacity": 0.05,
+        },
       },
       geoJsonParcellesUnmutatedContourLayer: {
         id: "parcellesUnmutated-contour",
@@ -258,7 +266,23 @@ export default {
         type: "fill",
         source: "parcellesMutated",
         layout: {},
-        paint: fillLayerPaint2,
+        paint: {
+          "fill-color": mutationColor,
+          "fill-outline-color": [
+            "case",
+            ["boolean", ["feature-state", "selected"], false],
+            mutationLieesColor,
+            borderColor,
+          ],
+          "fill-opacity": [
+            "case",
+            ["boolean", ["feature-state", "hover"], false],
+            0.8,
+            ["boolean", ["feature-state", "selected"], false],
+            0.8,
+            0.4,
+          ],
+        },
       },
       geoJsonParcellesMutatedContourLayer: {
         id: "parcellesMutated-contour",
