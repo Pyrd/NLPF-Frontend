@@ -6,22 +6,22 @@
     max-width="344"
   >
     <v-card-text>
-      <div>Favoris id</div>
+      <div>Favoris id : {{wholeResponse.response[0].id}}</div>
       <p class="text-h4 text--primary">
-        Favoris 1: Année PRIX
+         En {{wholeResponse.response[0].year}} pour un montant de {{wholeResponse.response[0].price}} $
       </p>
       <p>Localisation</p>
       <div class="text--primary">
-        Code postal:
+        Code postal:  {{wholeResponse.response[0].localisation.postal_code}}
       </div>
       <div class="text--primary">
-       Ville:
+       Ville: {{wholeResponse.response[0].localisation.city}}
       </div>
       <div class="text--primary">
-       Adresse:
+       Adresse: {{wholeResponse.response[0].localisation.address}}
       </div>
       <div class="text--primary">
-       Number:
+       Number: {{wholeResponse.response[0].localisation.number}}
       </div>
     </v-card-text>
     <v-card-actions>
@@ -36,28 +36,30 @@
   </v-card>
 </v-row>
 
-<v-row>
-  <v-card
+
+
+<v-row v-for="n in 4">
+ <v-card
     class="mx-auto"
     max-width="344"
   >
     <v-card-text>
-      <div>Favoris id</div>
+      <div>Favoris id : {{wholeResponse.response[n].id}}</div>
       <p class="text-h4 text--primary">
-        Favoris 2: Année PRIX
+         En {{wholeResponse.response[n].year}} pour un montant de {{wholeResponse.response[n].price}} $
       </p>
       <p>Localisation</p>
       <div class="text--primary">
-        Code postal:
+        Code postal:  {{wholeResponse.response[n].localisation.postal_code}}
       </div>
       <div class="text--primary">
-       Ville:
+       Ville: {{wholeResponse.response[n].localisation.city}}
       </div>
       <div class="text--primary">
-       Adresse:
+       Adresse: {{wholeResponse.response[n].localisation.address}}
       </div>
       <div class="text--primary">
-       Number:
+       Number: {{wholeResponse.response[n].localisation.number}}
       </div>
     </v-card-text>
     <v-card-actions>
@@ -75,7 +77,18 @@
 </template>
 
 <script>
-export default {};
+import axios from "axios";
+export default {
+ data: () => {
+    return {
+      wholeResponse: {},
+
+    };
+  },
+mounted () {
+  axios.get("https://stormy-taiga-31121.herokuapp.com/favoris").then(response => (this.wholeResponse = response.data));
+}
+};
 </script>
 
 <style>
