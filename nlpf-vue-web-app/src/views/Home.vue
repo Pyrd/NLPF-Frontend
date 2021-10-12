@@ -21,7 +21,7 @@
           :loading="loading"
         />
       </v-col>
-      <v-col cols="10">
+      <v-col :cols="selectedParcelle ? 8 : 10">
         <v-card height="100%" min-height="calc(100vh - 64px)">
           <Map
             ref="MapComponent"
@@ -40,7 +40,41 @@
           />
         </v-card>
       </v-col>
-      <!-- <v-col cols="1">COL2</v-col> -->
+      <v-col v-if="selectedParcelle" cols="2" class="pt-4 pr-4">
+        <div class="font-weight-bold h4">Resultats</div>
+        <div>{{ getResults.length }} ventes en 2020</div>
+        <v-row no-gutters>
+          <v-col v-for="(e, i) in getResults" :key="i" cols="12">
+            <v-card outlined>
+              <v-card-title
+                >{{ e.valeur_fonciere }}€ /
+                {{ e.nature_mutation }}</v-card-title
+              >
+              <v-card-subtitle>
+                {{ formatDate(e.date_mutation) }}
+              </v-card-subtitle>
+              <v-card-actions>
+                <v-row>
+                  <v-col v-for="(b, j) in e.biens" :key="j" cols="12">
+                    <v-card outlined>
+                      <v-card-title>
+                        {{ b.surface_reelle_bati }}m²</v-card-title
+                      >
+                      <v-card-subtitle>
+                        {{ b.type_local }}
+                        <span v-if="b.nombre_pieces_principales > 0"
+                          >/ {{ b.nombre_pieces_principales }}p</span
+                        >
+                      </v-card-subtitle>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-actions>
+              <!-- <v-card-text>{{ e }}</v-card-text> -->
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
     </v-row>
   </div>
 </template>
@@ -72,6 +106,7 @@ export default {
     page: 0,
     selectedDepartement: "",
     selectedComunes: "",
+    selectedParcelle: null,
     snackbar: false,
     loading: false,
     properties: {
@@ -81,11 +116,13 @@ export default {
   methods: {
     handleMapClickDepartement(data) {
       // console.log("handleMapClickDepartement", data);
-
+      this.selectedParcelle = null;
       this.fetchCommunes(data);
       this.$refs["FiltersComponent"].setDepartementInput(data.input);
     },
     handleMapClickCommunes(data) {
+      this.selectedParcelle = null;
+
       // console.log("handleMapClickCommunes", data);
       // this.fetchBiens(data);
       this.$refs["FiltersComponent"].setCommuneInput(data.input);
@@ -93,6 +130,8 @@ export default {
     },
     handleMapClickSection(data) {
       console.log("handleMapClickSection", data);
+      this.selectedParcelle = null;
+
       // this.fetchBiens(data);
       // this.$refs["FiltersComponent"].setCommuneInput(data.input);
       this.fetchParcelles(data.input, data.sectionId);
@@ -100,6 +139,7 @@ export default {
     },
     handleMapClickParcelle(data) {
       console.log("handleMapClickParcelle", data);
+      this.selectedParcelle = data.input;
     },
     async fetchBiens(id_parcelle) {
       this.loading = true;
@@ -147,6 +187,11 @@ export default {
       this.selectedComunes = "";
       this.selectedDepartement = "";
     },
+    formatDate(date) {
+      const parsed = Date.parse(date);
+      const newDate = new Date(parsed);
+      return newDate.toLocaleDateString("fr-FR");
+    },
   },
   computed: {
     getDepartementsList() {
@@ -156,6 +201,46 @@ export default {
     },
     getCommunesList() {
       return this.communes["features"] || [];
+    },
+    getResults() {
+      if (!this.selectedParcelle) {
+        return [];
+      }
+      const matching = this.results.filter(
+        (e) => e.id_parcelle === this.selectedParcelle
+      );
+
+      const reduced = [];
+      const skip = [];
+      for (let i = 0; i < matching.length; i++) {
+        const { date_mutation, valeur_fonciere, nature_mutation } = matching[i];
+        const bien = {
+          date_mutation,
+          valeur_fonciere,
+          nature_mutation,
+          biens: [matching[i]],
+        };
+        if (skip.includes(i)) {
+          continue;
+        }
+        for (let j = i + 1; j < matching.length; j++) {
+          console.log(
+            matching[j].date_mutation == date_mutation,
+            matching[j].valeur_fonciere == valeur_fonciere,
+            matching[j].nature_mutation == nature_mutation
+          );
+          if (
+            matching[j].date_mutation == date_mutation &&
+            matching[j].valeur_fonciere == valeur_fonciere &&
+            matching[j].nature_mutation == nature_mutation
+          ) {
+            bien.biens.push(matching[j]);
+            skip.push(j);
+          }
+        }
+        reduced.push(bien);
+      }
+      return reduced;
     },
   },
 };

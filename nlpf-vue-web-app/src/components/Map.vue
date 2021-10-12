@@ -451,8 +451,8 @@ export default {
         { selected: true }
       );
 
-      const { commune, sectionId } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectParcelles", { input: commune });
+      const { id } = e.mapboxEvent.features[0].properties;
+      this.$emit("selectParcelles", { input: id });
       const coord = e.mapboxEvent.lngLat;
       // this.zoomOnElement(coord.lng, coord.lat, 19);
     },
@@ -532,7 +532,7 @@ export default {
     isMutatedBien(id) {
       for (let bien of this.results) {
         if (bien.id_parcelle === id) {
-          console.log("IsMutatedbien TRUE>", id);
+          // console.log("IsMutatedbien TRUE>", id);
           return true;
         }
       }
@@ -566,6 +566,15 @@ export default {
         generateId: true,
         data: {
           ...this.sectionsgeojson,
+        },
+      };
+    },
+    getParcellesGeoJson() {
+      return {
+        type: "geojson",
+        generateId: true,
+        data: {
+          ...this.parcellesgeojson,
         },
       };
     },
