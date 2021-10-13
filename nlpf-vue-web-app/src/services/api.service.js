@@ -74,7 +74,6 @@ export const fetchSection = async (code) => {
 
 export const fetchBiens = async (id_parcelles, filters, pagination = 0) => {
     try {
-        console.log(`${API_BACKEND_BASEURL}/biens/${id_parcelles}`)
         const resp = await axios.post(`${API_BACKEND_BASEURL}/biens/${id_parcelles}`,
             {
                 "page": pagination,
@@ -86,6 +85,63 @@ export const fetchBiens = async (id_parcelles, filters, pagination = 0) => {
                 }
             }
         )
+        console.log(resp.data)
+        return resp.data
+    } catch (err) {
+        console.error(`Some error happened: ${err}`)
+        return null
+    }
+}
+
+export const compareCity = async (cityA, cityB, type, surface, nbpieces) => {
+    try {
+        const resp = await axios.get(`${API_BACKEND_BASEURL}/biens/City/comp/${cityA}/${cityB}`, {
+            params: {
+                type: type,
+                minsurface: surface[0],
+                maxsurface: surface[1],
+                minpiece: nbpieces[0],
+                maxpiece: nbpieces[1],
+            }
+        })
+        console.log(resp.data)
+        return resp.data
+    } catch (err) {
+        console.error(`Some error happened: ${err}`)
+        return null
+    }
+}
+
+export const statDepartement = async (code, type, surface, nbpieces) => {
+    try {
+        const resp = await axios.get(`${API_BACKEND_BASEURL}/biens/Stats/departement/${code}`, {
+            params: {
+                type: type,
+                minsurface: surface[0],
+                maxsurface: surface[1],
+                minpiece: nbpieces[0],
+                maxpiece: nbpieces[1],
+            }
+        })
+        console.log(resp.data)
+        return resp.data
+    } catch (err) {
+        console.error(`Some error happened: ${err}`)
+        return null
+    }
+}
+
+export const statCommune = async (code, type, surface, nbpieces) => {
+    try {
+        const resp = await axios.get(`${API_BACKEND_BASEURL}/biens/Stats/commune/${code}`, {
+            params: {
+                type: type,
+                minsurface: surface[0],
+                maxsurface: surface[1],
+                minpiece: nbpieces[0],
+                maxpiece: nbpieces[1],
+            }
+        })
         console.log(resp.data)
         return resp.data
     } catch (err) {

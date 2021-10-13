@@ -440,21 +440,28 @@ export default {
       e.mapboxEvent.originalEvent.stopPropagation();
       console.log(JSON.stringify(e.mapboxEvent.features[0]));
 
-      this.map.setFeatureState(
-        { source: "parcellesMutated", id: this.selectedStateId },
-        { selected: false }
-      );
+      if (e.mapboxEvent.features[0].id == this.selectedStateId) {
+        this.map.setFeatureState(
+          { source: "parcellesMutated", id: this.selectedStateId },
+          { selected: false }
+        );
+        this.$emit("selectParcelles", { input: null });
+        this.selectedStateId = null;
+      } else {
+        this.map.setFeatureState(
+          { source: "parcellesMutated", id: this.selectedStateId },
+          { selected: false }
+        );
 
-      this.selectedStateId = e.mapboxEvent.features[0].id;
-      this.map.setFeatureState(
-        { source: "parcellesMutated", id: this.selectedStateId },
-        { selected: true }
-      );
+        this.selectedStateId = e.mapboxEvent.features[0].id;
+        this.map.setFeatureState(
+          { source: "parcellesMutated", id: this.selectedStateId },
+          { selected: true }
+        );
 
-      const { id } = e.mapboxEvent.features[0].properties;
-      this.$emit("selectParcelles", { input: id });
-      const coord = e.mapboxEvent.lngLat;
-      // this.zoomOnElement(coord.lng, coord.lat, 19);
+        const { id } = e.mapboxEvent.features[0].properties;
+        this.$emit("selectParcelles", { input: id });
+      }
     },
     zoomOnElement(lng, lat, zoom) {
       // console.log(`Zomming on ${lng}, ${lat}, zoom: ${zoom}`);

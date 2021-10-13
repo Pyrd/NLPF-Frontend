@@ -213,14 +213,19 @@ export default {
       const reduced = [];
       const skip = [];
       for (let i = 0; i < matching.length; i++) {
-        const { date_mutation, valeur_fonciere, nature_mutation } = matching[i];
+        const {
+          date_mutation,
+          valeur_fonciere,
+          nature_mutation,
+          surface_reelle_bati,
+        } = matching[i];
         const bien = {
           date_mutation,
           valeur_fonciere,
           nature_mutation,
           biens: [matching[i]],
         };
-        if (skip.includes(i)) {
+        if (skip.includes(i) || surface_reelle_bati == null) {
           continue;
         }
         for (let j = i + 1; j < matching.length; j++) {

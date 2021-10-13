@@ -63,7 +63,7 @@
             </template>
           </v-select>
         </v-col>
-        <v-col cols="12">
+        <!-- <v-col cols="12">
           <div class="font-weight-bold">Montant de la vente (en K€)</div></v-col
         >
         <v-col cols="12" class="mt-4">
@@ -107,8 +107,8 @@
               ></v-text-field>
             </v-col>
           </v-row>
-        </v-col>
-        <v-col cols="12">
+        </v-col> -->
+        <!-- <v-col cols="12">
           <v-btn
             :loading="loading"
             color="primary"
@@ -119,7 +119,7 @@
           >
             Recherche
           </v-btn>
-        </v-col>
+        </v-col> -->
       </v-row>
     </v-container>
   </v-form>
