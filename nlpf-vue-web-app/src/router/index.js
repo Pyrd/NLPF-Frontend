@@ -94,3 +94,23 @@ const router = new VueRouter({
 router.beforeEach(setPageTitleMiddleware)
 
 export default router
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

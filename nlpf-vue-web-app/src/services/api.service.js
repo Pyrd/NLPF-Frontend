@@ -175,3 +175,14 @@ export const statCommune = async (code, type, surface, nbpieces) => {
 // "created": "2005-12-30",
 // "updated": "2019-12-11"
 //       }
+const URL_API = "https://stormy-taiga-31121.herokuapp.com"
+
+export const fetchUser = async () => {
+    try {
+        const response = await axios.get(`${URL_API}/user/me`)
+        return response.data
+    } catch (error) {
+        console.error('An error happened: ${error}')
+        return null
+    }
+}
