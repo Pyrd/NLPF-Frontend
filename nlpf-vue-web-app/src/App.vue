@@ -7,6 +7,20 @@
 
       <v-spacer></v-spacer>
       <v-btn
+        v-if="isNotOn('/comparateur')"
+        text
+        @click="appBarMenuHandler({ type: 'ROUTE', data: '/comparateur' })"
+      >
+        Comparateur
+      </v-btn>
+      <v-btn
+        v-if="isNotOn('/statistiques')"
+        text
+        @click="appBarMenuHandler({ type: 'ROUTE', data: '/statistiques' })"
+      >
+        Statistiques
+      </v-btn>
+      <v-btn
         v-if="isNotOnMap"
         text
         @click="appBarMenuHandler({ type: 'ROUTE', data: '/' })"
@@ -72,6 +86,9 @@ export default {
           this.logout();
           break;
       }
+    },
+    isNotOn(path) {
+      return this.$route.path !== path;
     },
   },
   computed: {

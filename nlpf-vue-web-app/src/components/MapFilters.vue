@@ -63,7 +63,9 @@
             </template>
           </v-select>
         </v-col>
-        <v-col cols="12"> Montant de la vente (en K€) </v-col>
+        <!-- <v-col cols="12">
+          <div class="font-weight-bold">Montant de la vente (en K€)</div></v-col
+        >
         <v-col cols="12" class="mt-4">
           <v-range-slider
             v-model="range"
@@ -82,6 +84,7 @@
           <v-row>
             <v-col class="center">
               <v-text-field
+                outlined
                 :value="range[0]"
                 class="mt-0 pt-0"
                 hide-details
@@ -93,6 +96,7 @@
             </v-col>
             <v-col class="center">
               <v-text-field
+                outlined
                 :value="range[1]"
                 class="mt-0 pt-0"
                 hide-details
@@ -103,10 +107,19 @@
               ></v-text-field>
             </v-col>
           </v-row>
-        </v-col>
-        <v-col cols="12">
-          <v-btn outlined @click="filter" :disabled="!valid"> Recherche </v-btn>
-        </v-col>
+        </v-col> -->
+        <!-- <v-col cols="12">
+          <v-btn
+            :loading="loading"
+            color="primary"
+            block
+            outlined
+            @click="filter"
+            :disabled="!valid"
+          >
+            Recherche
+          </v-btn>
+        </v-col> -->
       </v-row>
     </v-container>
   </v-form>
@@ -117,6 +130,8 @@ export default {
   props: {
     departementList: Array,
     communesList: Array,
+    price_range: Array,
+    loading: Boolean,
   },
   data: () => ({
     valid: false,
@@ -134,6 +149,7 @@ export default {
       this.$emit("filter", {
         departementInput: this.departementInput,
         communeInput: this.communeInput,
+        price_range: this.range.map((e) => e * 1000),
       });
     },
     fetchCommunes() {
@@ -144,7 +160,6 @@ export default {
       this.departementInput = input;
     },
     setCommuneInput(input) {
-      console.log(">", input);
       this.communeInput = input;
     },
   },
@@ -173,6 +188,9 @@ export default {
   watch: {
     communesList(newList, old) {
       this.communeLoading = false;
+    },
+    price_range(newList, old) {
+      this.range = newList;
     },
   },
 };

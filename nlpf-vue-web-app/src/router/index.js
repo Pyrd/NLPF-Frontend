@@ -1,8 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Comparateur from '../views/Comparateur.vue'
 import Home from '../views/Home.vue'
 import notFoundPage from '../views/NotFound.vue'
-import { setPageTitleMiddleware, checkAccessMiddleware, initCurrentUserStateMiddleware } from './middlewares'
+import Stats from '../views/Stats.vue'
+import { setPageTitleMiddleware } from './middlewares'
+
 
 Vue.use(VueRouter)
 
@@ -14,6 +17,18 @@ const routes = [
     name: 'Home',
     meta: { title: base_title + "Map" },
     component: Home
+  },
+  {
+    path: '/comparateur',
+    name: 'Comparateur',
+    meta: { title: base_title + "Comparateur" },
+    component: Comparateur
+  },
+  {
+    path: '/statistiques',
+    name: 'Stats',
+    meta: { title: base_title + "Comparateur" },
+    component: Stats
   },
   {
     path: '/profile',

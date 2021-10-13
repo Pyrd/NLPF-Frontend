@@ -1,4 +1,6 @@
 export const fillColor = '#2a4ba9'
+export const fillColor2 = '#4232a8'
+
 export const borderColor = '#627BC1'
 export const mutationColor = '#00C5FF'
 export const mutationSelectedColor = '#ff5FA8'
@@ -8,6 +10,16 @@ export const unmutatedColor = '#212f39'
 export const hoverableSources = ['departements', 'communes', 'sections', 'parcelles']
 export const fillLayerPaint = {
     "fill-color": fillColor,
+    "fill-outline-color": borderColor,
+    "fill-opacity": ["case",
+        ["boolean", ["feature-state", "hover"], false],
+        0.2,
+        0
+    ]
+}
+
+export const fillLayerPaint2 = {
+    "fill-color": fillColor2,
     "fill-outline-color": borderColor,
     "fill-opacity": ["case",
         ["boolean", ["feature-state", "hover"], false],
