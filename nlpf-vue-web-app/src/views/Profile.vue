@@ -5,23 +5,20 @@
       <v-row justify="center" align="center" no-gutters>
         <v-col cols="3" class="left-col">
           <v-row>
-            <v-avatar color="indigo" size="100">
+            <v-avatar
+              class="mt-4"
+              color="indigo"
+              size="100"
+              src="https://picsum.photos/200/300"
+            >
               <v-icon dark> mdi-account-circle </v-icon>
             </v-avatar>
           </v-row>
           <v-row>
-            <v-card>
-              <v-card-title> John Doe</v-card-title>
-            </v-card>
-          </v-row>
-          <v-row>
-            <v-card>
-              <v-card-title> john.doe@gmail.com</v-card-title>
-            </v-card>
-          </v-row>
-          <v-row>
-            <v-card>
-              <v-card-title> Acheteur</v-card-title>
+            <v-card outlined class="mt-4">
+              <v-card-title class="mt-1 pb-0">Joel Courtois</v-card-title>
+              <v-card-title class="pt-0"> joel.courtois@gmail.com</v-card-title>
+              <v-card-subtitle>Acheteur</v-card-subtitle>
             </v-card>
           </v-row>
         </v-col>
