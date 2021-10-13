@@ -70,8 +70,8 @@
               <v-col cols="12" class="mt-14">
                 <v-range-slider
                   v-model="surface1"
-                  :max="maxsurface1"
-                  :min="minsurface1"
+                  :max="maxsurface"
+                  :min="minsurface"
                   hide-details
                   step="1"
                   class="align-center"
@@ -116,8 +116,8 @@
               <v-col cols="12" class="mt-10">
                 <v-range-slider
                   v-model="nbpieces1"
-                  :max="maxsurface1"
-                  :min="minsurface1"
+                  :max="maxnbpieces"
+                  :min="minnbpieces"
                   hide-details
                   step="1"
                   class="align-center"
@@ -258,8 +258,8 @@
               <v-col cols="12" class="mt-14">
                 <v-range-slider
                   v-model="surface2"
-                  :max="maxsurface2"
-                  :min="minsurface2"
+                  :max="maxnbpieces"
+                  :min="minnbpieces"
                   hide-details
                   step="1"
                   class="align-center"
@@ -304,8 +304,8 @@
               <v-col cols="12" class="mt-10">
                 <v-range-slider
                   v-model="nbpieces2"
-                  :max="maxsurface2"
-                  :min="minsurface2"
+                  :max="maxsurface"
+                  :min="minsurface"
                   hide-details
                   step="1"
                   class="align-center"
@@ -397,6 +397,13 @@
                     {{ results.moy.toFixed(2) }}€</v-card-text
                   >
                   <v-card-text
+                    ><b> Moyenne des surfaces:</b>
+                    {{ results.suf.toFixed(2) }}m²</v-card-text
+                  ><v-card-text
+                    ><b>Moyenne des prix par m²:</b>
+                    {{ results.moy_m2.toFixed(2) }}€/m²</v-card-text
+                  >
+                  <v-card-text
                     ><b>Minimum des prix:</b>
                     {{ results.min.toFixed(2) }}€</v-card-text
                   >
@@ -449,18 +456,14 @@ export default {
   },
   data: () => ({
     type1: null,
-    minsurface1: 0,
-    maxsurface1: 100000,
+    minsurface: 0,
+    maxsurface: 100000,
+    minnbpieces: 0,
+    maxnbpieces: 100,
     surface1: [0, 100000],
-    minnbpieces1: 0,
-    maxnbpieces1: 100,
     nbpieces1: [0, 100],
     type2: null,
-    minsurface2: 0,
-    maxsurface2: 100000,
     surface2: [0, 100000],
-    minnbpieces2: 0,
-    maxnbpieces2: 100,
     nbpieces2: [0, 100],
     tab: 0,
     departements: departements,

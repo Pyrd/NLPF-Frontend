@@ -208,8 +208,8 @@
           <v-col cols="12" class="mt-10">
             <v-range-slider
               v-model="nbpieces"
-              :max="maxsurface"
-              :min="minsurface"
+              :max="maxnbpieces"
+              :min="minnbpieces"
               hide-details
               step="1"
               class="align-center"
@@ -287,6 +287,12 @@
                   <v-card-text
                     ><b>Moyenne des prix:</b>
                     {{ comparaison.city1.moy.toFixed(2) }}€</v-card-text
+                  ><v-card-text
+                    ><b> Moyenne des surfaces:</b>
+                    {{ comparaison.city1.suf.toFixed(2) }}m²</v-card-text
+                  ><v-card-text
+                    ><b>Moyenne des prix par m²:</b>
+                    {{ comparaison.city1.moy_m2.toFixed(2) }}€/m²</v-card-text
                   >
                   <v-card-text
                     ><b>Minimum des prix:</b>
@@ -313,6 +319,13 @@
                   <v-card-text
                     ><b>Moyenne des prix:</b>
                     {{ comparaison.city2.moy.toFixed(2) }}€</v-card-text
+                  >
+                  <v-card-text
+                    ><b> Moyenne des surfaces:</b>
+                    {{ comparaison.city2.suf.toFixed(2) }}m²</v-card-text
+                  ><v-card-text
+                    ><b>Moyenne des prix par m²:</b>
+                    {{ comparaison.city2.moy_m2.toFixed(2) }}€/m²</v-card-text
                   >
                   <v-card-text
                     ><b>Minimum des prix:</b>
@@ -347,7 +360,7 @@
                     {{ getCommuneInputAName }}
                   </v-card-text>
                   <v-card-text
-                    ><b>Moyenne</b> Le prix est en moyenne
+                    ><b>Moyenne:</b> Le prix est en moyenne
                     <span
                       class="text-font-weight"
                       :class="
@@ -361,8 +374,23 @@
                     {{ getCommuneInputBName }} que à
                     {{ getCommuneInputAName }}</v-card-text
                   >
+                  <v-card-text
+                    ><b>Moyenne prix/m²:</b> Le prix par m² est en moyenne
+                    <span
+                      class="text-font-weight"
+                      :class="
+                        comparaison.moy_m2_diff < 0
+                          ? 'error--text'
+                          : 'success--text'
+                      "
+                      >{{ (comparaison.moy_m2_diff * 100).toFixed(2) }}%</span
+                    >
+                    {{ comparaison.moy_diff < 0 ? "moins" : "plus" }} élevé à
+                    {{ getCommuneInputBName }} que à
+                    {{ getCommuneInputAName }}</v-card-text
+                  >
                   <v-card-text>
-                    <b>Minimum</b> Le prix est minimum
+                    <b>Minimum:</b> Le prix est minimum
                     <span
                       class="text-font-weight"
                       :class="
@@ -378,7 +406,7 @@
                     {{ getCommuneInputAName }}
                   </v-card-text>
                   <v-card-text>
-                    <b>Maximum</b> Le prix est maximum
+                    <b>Maximum:</b> Le prix est maximum
                     <span
                       class="text-font-weight"
                       :class="
@@ -393,7 +421,7 @@
                     {{ getCommuneInputAName }}
                   </v-card-text>
                   <v-card-text>
-                    <b>Mediane</b> Le prix est medium
+                    <b>Mediane:</b> Le prix est medium
                     <span
                       class="text-font-weight"
                       :class="
@@ -416,7 +444,8 @@
             <v-row align="center" justify="center" class="fheight">
               <v-col cols="6" class="center" style="flex-direction: column">
                 <div class="mt-4 font-weight-bold h3">
-                  Choisie 2 villes et compare les !
+                  Choisissez une ville ou un département et obtenez ses
+                  statistiques
                 </div>
               </v-col>
             </v-row>
@@ -528,6 +557,7 @@ export default {
       this.results = results;
     },
     async fetchCommunesA() {
+      this.resetResults();
       const input = this.departementInputA;
       console.log(`A: Fetching city of departement code: ${input}`);
       this.snackbar = true;
@@ -541,6 +571,7 @@ export default {
       // this.resetFilters();
     },
     async fetchCommunesB() {
+      this.resetResults();
       const input = this.departementInputB;
 
       console.log(`B: Fetching city of departement code: ${input}`);
