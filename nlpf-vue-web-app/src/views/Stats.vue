@@ -258,8 +258,8 @@
               <v-col cols="12" class="mt-14">
                 <v-range-slider
                   v-model="surface2"
-                  :max="maxnbpieces"
-                  :min="minnbpieces"
+                  :max="maxsurface"
+                  :min="minsurface"
                   hide-details
                   step="1"
                   class="align-center"
@@ -304,8 +304,8 @@
               <v-col cols="12" class="mt-10">
                 <v-range-slider
                   v-model="nbpieces2"
-                  :max="maxsurface"
-                  :min="minsurface"
+                  :max="maxnbpieces"
+                  :min="minnbpieces"
                   hide-details
                   step="1"
                   class="align-center"
